@@ -13,4 +13,6 @@ contextBridge.exposeInMainWorld('desktop', {
     ipcRenderer.on('app:close-requested', () => callback())
   },
   confirmClose: () => ipcRenderer.invoke('app:confirm-close'),
+  loadTimbres: () => ipcRenderer.invoke('timbres:load'),
+  saveTimbres: (json: string) => ipcRenderer.invoke('timbres:save', json),
 })

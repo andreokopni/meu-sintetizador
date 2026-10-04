@@ -118,6 +118,24 @@ ipcMain.handle('wav:save', async (_event, args: { data: ArrayBuffer; suggestedNa
   return result.filePath
 })
 
+// Biblioteca de timbres do usuário: um JSON na pasta de dados do app (sobrevive a atualizações).
+const timbresFile = () => path.join(app.getPath('userData'), 'timbres.json')
+
+ipcMain.handle('timbres:load', async () => {
+  try {
+    return await fs.readFile(timbresFile(), 'utf-8')
+  } catch {
+    return '[]'
+  }
+})
+
+ipcMain.handle('timbres:save', async (_event, json: string) => {
+  // Escreve num temporário e renomeia, para não corromper a biblioteca se o app fechar no meio.
+  const tmp = `${timbresFile()}.tmp`
+  await fs.writeFile(tmp, json, 'utf-8')
+  await fs.rename(tmp, timbresFile())
+})
+
 ipcMain.handle('app:confirm-close', () => {
   forceClose = true
   win?.close()

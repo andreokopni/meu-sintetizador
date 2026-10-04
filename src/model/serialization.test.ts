@@ -13,6 +13,16 @@ describe('serialização de projeto', () => {
     expect(parseProject(serializeProject(project))).toEqual(project)
   })
 
+  it('preserva timbres do usuário embutidos e descarta inválidos', () => {
+    const project = createEmptyProject()
+    project.customTimbres = [{ id: 'user:abc', name: 'Meu lead', baseInstrumentId: 'builder', params: { cutoff: 900 } }]
+    expect(parseProject(serializeProject(project)).customTimbres).toEqual(project.customTimbres)
+
+    const raw = JSON.parse(serializeProject(project))
+    raw.customTimbres.push({ id: 'sem-prefixo', baseInstrumentId: 'lead' }, { id: 'user:x' })
+    expect(parseProject(JSON.stringify(raw)).customTimbres).toHaveLength(1)
+  })
+
   it('rejeita arquivos que não são projetos', () => {
     expect(() => parseProject('não é json')).toThrow(/JSON/)
     expect(() => parseProject('{"tracks": []}')).toThrow(/não é um projeto/)

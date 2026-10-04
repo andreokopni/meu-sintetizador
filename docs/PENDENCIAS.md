@@ -2,6 +2,30 @@
 
 Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HISTORICO.
 
+## EM ANDAMENTO — Criador de timbres (pedido do usuário em 2026-10-04)
+Objetivo: nível 1 (salvar timbre como "Meu timbre") + nível 2 (sintetizador construtor), sem
+poluir o visual atual. Plano (marque ao concluir; cada passo = um commit):
+- [x] A. `setTrackParams` em lote no store; `customTimbres` opcional no projeto (serialização).
+- [x] B. Nível 1: biblioteca de timbres do usuário (`audio/instruments/userTimbres.ts`), persistida
+  em arquivo `userData/timbres.json` via IPC no Electron (localStorage na web); categoria
+  "Meus timbres" no seletor; timbres usados no projeto são embutidos no `.msynth`.
+  **Regra do usuário: instrumentos de fábrica são FIXOS (somente leitura).** O painel mostra só
+  mixagem + "Personalizar este som" (cria "<nome> (meu)"). Timbres do usuário são editáveis e a
+  edição vai direto para o timbre (salvo com atraso de 600 ms), valendo para todas as faixas que o
+  usam. Rodapé: Duplicar / Excluir (ao excluir, faixas voltam ao base com os mesmos parâmetros).
+- [ ] C. Motor do construtor (`audio/instruments/builder.ts`): pool de vozes próprio (não
+  PolySynth), por voz: osc1, osc2 (OmniOscillator com uníssono), sub, ruído → filtro 24 dB com
+  FrequencyEnvelope → AmplitudeEnvelope; compartilhado: LFO (vibrato/filtro), tremolo,
+  distorção, chorus, delay, reverb (Freeverb, síncrono). 4 macros fixos (Brilho, Ataque,
+  Espaço, Movimento) que escalam outros parâmetros. Tudo declarado como ParamSpec (IA usa isso).
+- [ ] D. UI: painel lateral mostra só macros + botão "Abrir construtor"; o construtor abre em
+  modal com blocos em grade, curvas de envelope (SVG), teclado de pré-escuta (mouse e teclas
+  A-K), modelos iniciais (Básico, Baixo, Lead, Pad, Pluck, Keys), "Variar", A/B e restaurar.
+- [ ] E. Testes (macros, migração de customTimbres), docs, commit.
+Detalhe técnico importante: no Tone, conectar um sinal a um Param ZERA o valor do Param; por isso
+modulações aditivas (vibrato no detune, LFO no corte) usam um Tone.Signal de base + o modulador,
+ambos conectados ao Param (as conexões de áudio somam).
+
 ## Verificação pendente
 - [ ] **Ouvir a reprodução ao vivo no app.** A automação de teste não consegue liberar o áudio
   (política de autoplay do navegador) nem ouvir o resultado. Verificado por script: renderização

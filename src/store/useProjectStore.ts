@@ -6,6 +6,7 @@ import {
   createTrack,
   type Note,
   type ParamValue,
+  type ParamValues,
   type Project,
   type Track,
 } from '../model/project'
@@ -51,6 +52,8 @@ interface ProjectState {
   updateTrack(id: string, patch: Partial<Omit<Track, 'id' | 'notes'>>, history?: boolean): void
   setInstrument(id: string, instrumentId: string): void
   setTrackParam(id: string, key: string, value: ParamValue, history?: boolean): void
+  /** Substitui todos os parâmetros (modelos, variar, A/B do construtor). */
+  setTrackParams(id: string, params: ParamValues, history?: boolean): void
   resetTrackParams(id: string): void
 
   addNote(trackId: string, pitch: number, start: number, duration: number): Note
@@ -176,6 +179,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setTrackParam(id, key, value, history = true) {
     get().apply((p) => mapTrack(p, id, (t) => ({ ...t, params: { ...effectiveParams(t), [key]: value } })), history)
+  },
+
+  setTrackParams(id, params, history = true) {
+    get().apply((p) => mapTrack(p, id, (t) => ({ ...t, params: { ...params } })), history)
   },
 
   resetTrackParams(id) {

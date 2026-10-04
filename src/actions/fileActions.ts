@@ -1,4 +1,5 @@
 import { renderProjectToWav } from '../audio/exportWav'
+import { registerProjectTimbres, timbresUsedBy } from '../audio/instruments/userTimbres'
 import { createEmptyProject } from '../model/project'
 import { parseProject, serializeProject } from '../model/serialization'
 import { openProjectFile, saveProjectFile, saveWavFile } from '../platform'
@@ -27,6 +28,7 @@ export async function openProject() {
   try {
     const project = parseProject(file.json)
     stopPlayback()
+    registerProjectTimbres(project)
     store().loadProject(project, file.filePath)
   } catch (err) {
     window.alert((err as Error).message)
@@ -36,7 +38,10 @@ export async function openProject() {
 export async function saveProject(saveAs = false): Promise<boolean> {
   const { project, filePath } = store()
   try {
-    const saved = await saveProjectFile(serializeProject(project), project.name, filePath ?? undefined, saveAs)
+    // Embute os timbres do usuário usados, para o projeto tocar igual em outro computador.
+    const timbres = timbresUsedBy(project)
+    const toSave = { ...project, customTimbres: timbres.length ? timbres : undefined }
+    const saved = await saveProjectFile(serializeProject(toSave), project.name, filePath ?? undefined, saveAs)
     if (!saved) return false
     store().markSaved(saved)
     return true

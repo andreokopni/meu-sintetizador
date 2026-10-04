@@ -387,6 +387,74 @@ input[type='range'] {
   width: 100%;
 }
 
+.timbre-title {
+  width: 100%;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.factory-notice {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.factory-notice p,
+.timbre-footer p {
+  margin: 0;
+  color: var(--muted);
+}
+.small {
+  font-size: 11px;
+}
+.open-builder {
+  width: 100%;
+  margin-top: 12px;
+}
+button.link.inline {
+  display: inline;
+  font-size: inherit;
+  padding: 0;
+}
+.timbre-footer {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.timbre-footer .row {
+  display: flex;
+  gap: 6px;
+}
+.timbre-footer .row button {
+  flex: 1;
+}
+.timbre-footer .timbre-name {
+  display: flex;
+  gap: 4px;
+}
+.timbre-footer .timbre-name input {
+  flex: 1;
+  min-width: 0;
+}
+button.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+button.link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 2px 0;
+  text-align: left;
+  font-size: 12px;
+}
+button.link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .overlay {
   position: fixed;
   inset: 0;

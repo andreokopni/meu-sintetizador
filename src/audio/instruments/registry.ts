@@ -18,6 +18,13 @@ export function registerInstrument(def: InstrumentDefinition) {
   listeners.forEach((l) => l())
 }
 
+export function unregisterInstrument(id: string) {
+  if (definitions.delete(id)) {
+    version++
+    listeners.forEach((l) => l())
+  }
+}
+
 /** Muda a cada registro; usado pela interface para saber quando recarregar a lista. */
 export function getInstrumentsVersion(): number {
   return version

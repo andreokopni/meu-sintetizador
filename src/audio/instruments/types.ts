@@ -32,7 +32,7 @@ export interface InstrumentVoice {
   dispose(): void
 }
 
-export type InstrumentCategory = 'Sintetizador' | 'Sampler' | 'Bateria'
+export type InstrumentCategory = 'Sintetizador' | 'Sampler' | 'Bateria' | 'Meus timbres'
 
 export interface InstrumentDefinition {
   id: string
@@ -49,6 +49,11 @@ export interface InstrumentDefinition {
    * editor de peças (modo bateria) mostrando só essas linhas.
    */
   rows?: number[]
+  /**
+   * Editor dedicado. 'builder': o painel lateral mostra só os macros (grupo "Macros") e um
+   * botão que abre o construtor em tela cheia.
+   */
+  editor?: 'builder'
   /** Extensão em que o instrumento soa natural (ex.: samplers); o piano roll escurece o resto. */
   range?: [number, number]
   create(output: Tone.InputNode, params: ParamValues): InstrumentVoice

@@ -1,4 +1,12 @@
-import { PROJECT_VERSION, uid, type Note, type Project, type Track } from './project'
+import {
+  PROJECT_VERSION,
+  uid,
+  type Note,
+  type ParamValues,
+  type Project,
+  type Track,
+  type UserTimbre,
+} from './project'
 
 const FORMAT = 'meu-sintetizador'
 
@@ -24,14 +32,33 @@ function parseNote(raw: any): Note | null {
   }
 }
 
-function parseTrack(raw: any, index: number): Track {
-  if (!raw || typeof raw !== 'object') throw new Error(`Faixa ${index + 1} inválida`)
-  const params: Track['params'] = {}
-  if (raw.params && typeof raw.params === 'object') {
-    for (const [k, v] of Object.entries(raw.params)) {
+function parseParams(raw: any): ParamValues {
+  const params: ParamValues = {}
+  if (raw && typeof raw === 'object') {
+    for (const [k, v] of Object.entries(raw)) {
       if (typeof v === 'number' || typeof v === 'string') params[k] = v
     }
   }
+  return params
+}
+
+/** Valida timbres do usuário (usado no projeto e na biblioteca de timbres). */
+export function parseUserTimbres(raw: unknown): UserTimbre[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((t) => t && typeof t === 'object' && typeof t.id === 'string' && t.id.startsWith('user:'))
+    .filter((t) => typeof t.baseInstrumentId === 'string')
+    .map((t) => ({
+      id: t.id,
+      name: typeof t.name === 'string' ? t.name : 'Timbre sem nome',
+      baseInstrumentId: t.baseInstrumentId,
+      params: parseParams(t.params),
+    }))
+}
+
+function parseTrack(raw: any, index: number): Track {
+  if (!raw || typeof raw !== 'object') throw new Error(`Faixa ${index + 1} inválida`)
+  const params = parseParams(raw.params)
   return {
     id: typeof raw.id === 'string' ? raw.id : uid(),
     name: typeof raw.name === 'string' ? raw.name : `Faixa ${index + 1}`,
@@ -68,7 +95,7 @@ export function parseProject(text: string): Project {
   }
   raw = migrate(raw)
   if (!Array.isArray(raw.tracks)) throw new Error('Arquivo inválido: lista de faixas ausente.')
-  return {
+  const project: Project = {
     version: PROJECT_VERSION,
     name: typeof raw.name === 'string' ? raw.name : 'Sem título',
     bpm: num(raw.bpm, 120, 20, 300),
@@ -76,4 +103,8 @@ export function parseProject(text: string): Project {
     lengthBars: Math.round(num(raw.lengthBars, 16, 1, 512)),
     tracks: raw.tracks.map(parseTrack),
   }
+  // Campo opcional (adicionado depois da v1; versões antigas o ignoram, por isso sem migração).
+  const timbres = parseUserTimbres(raw.customTimbres)
+  if (timbres.length) project.customTimbres = timbres
+  return project
 }

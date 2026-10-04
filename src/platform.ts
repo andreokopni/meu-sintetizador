@@ -7,6 +7,8 @@ interface DesktopApi {
   saveWav(data: ArrayBuffer, suggestedName: string): Promise<string | null>
   onCloseRequested(callback: () => void): void
   confirmClose(): Promise<void>
+  loadTimbres(): Promise<string>
+  saveTimbres(json: string): Promise<void>
 }
 
 declare global {
@@ -44,6 +46,27 @@ export async function openProjectFile(): Promise<{ filePath: string; json: strin
     }
     input.click()
   })
+}
+
+const TIMBRES_KEY = 'msynth.userTimbres'
+
+/** Biblioteca de timbres do usuário (JSON). Desktop: arquivo em userData; web: localStorage. */
+export async function loadTimbresJson(): Promise<string> {
+  if (window.desktop) return window.desktop.loadTimbres()
+  try {
+    return localStorage.getItem(TIMBRES_KEY) ?? '[]'
+  } catch {
+    return '[]'
+  }
+}
+
+export async function saveTimbresJson(json: string): Promise<void> {
+  if (window.desktop) return window.desktop.saveTimbres(json)
+  try {
+    localStorage.setItem(TIMBRES_KEY, json)
+  } catch {
+    // sem armazenamento disponível (modo privado): o timbre vale só nesta sessão
+  }
 }
 
 export async function saveWavFile(data: ArrayBuffer, name: string) {

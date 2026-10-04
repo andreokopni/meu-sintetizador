@@ -1,27 +1,38 @@
+import { useState } from 'react'
 import { effectiveParams, getInstrument } from '../audio/instruments/registry'
 import type { ParamSpec } from '../audio/instruments/types'
-import type { ParamValue } from '../model/project'
+import {
+  createUserTimbre,
+  deleteUserTimbre,
+  editUserTimbre,
+  getTimbre,
+  isUserTimbre,
+  setUserTimbreParam,
+} from '../audio/instruments/userTimbres'
+import type { ParamValue, Track } from '../model/project'
 import { useProjectStore } from '../store/useProjectStore'
 import { useInstruments } from './InstrumentSelect'
 
 const SLIDER_STEPS = 1000
 
+type NumberSpec = Extract<ParamSpec, { type: 'number' }>
+
 /** Converte valor <-> posição do slider (0..SLIDER_STEPS), com escala logarítmica opcional. */
-function toSlider(spec: Extract<ParamSpec, { type: 'number' }>, value: number): number {
+function toSlider(spec: NumberSpec, value: number): number {
   const t = spec.log
     ? Math.log(value / spec.min) / Math.log(spec.max / spec.min)
     : (value - spec.min) / (spec.max - spec.min)
   return Math.round(Math.min(1, Math.max(0, t)) * SLIDER_STEPS)
 }
 
-function fromSlider(spec: Extract<ParamSpec, { type: 'number' }>, pos: number): number {
+function fromSlider(spec: NumberSpec, pos: number): number {
   const t = pos / SLIDER_STEPS
   const raw = spec.log ? spec.min * Math.pow(spec.max / spec.min, t) : spec.min + t * (spec.max - spec.min)
   const stepped = Math.round(raw / spec.step) * spec.step
   return Number(Math.min(spec.max, Math.max(spec.min, stepped)).toFixed(4))
 }
 
-function formatValue(spec: Extract<ParamSpec, { type: 'number' }>, value: number): string {
+export function formatValue(spec: NumberSpec, value: number): string {
   let text: string
   if (spec.unit === 'Hz' && value >= 1000) text = `${(value / 1000).toFixed(2)} k`
   else if (spec.step >= 1) text = String(Math.round(value))
@@ -30,23 +41,22 @@ function formatValue(spec: Extract<ParamSpec, { type: 'number' }>, value: number
   return spec.unit ? `${text} ${spec.unit === 'Hz' && value >= 1000 ? 'Hz' : spec.unit}` : text
 }
 
-function ParamControl({
+/** Controle de um parâmetro (slider ou lista), reutilizado pelo construtor. */
+export function ParamControl({
   spec,
   value,
   onChange,
-  onBegin,
 }: {
   spec: ParamSpec
   value: ParamValue
-  onChange(value: ParamValue, history: boolean): void
-  onBegin(): void
+  onChange(value: ParamValue): void
 }) {
   if (spec.type === 'select') {
     return (
       <div className="param">
         <span className="label">{spec.label}</span>
         <span />
-        <select value={String(value)} onChange={(e) => onChange(e.target.value, true)}>
+        <select value={String(value)} onChange={(e) => onChange(e.target.value)}>
           {spec.options.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -66,19 +76,33 @@ function ParamControl({
         min={0}
         max={SLIDER_STEPS}
         value={toSlider(spec, num)}
-        onPointerDown={onBegin}
-        onKeyDown={onBegin}
-        onChange={(e) => onChange(fromSlider(spec, Number(e.target.value)), false)}
+        onChange={(e) => onChange(fromSlider(spec, Number(e.target.value)))}
       />
     </div>
   )
 }
 
-/** Painel de edição de timbre da faixa selecionada, gerado a partir dos ParamSpec do instrumento. */
-export function InstrumentEditor() {
-  useInstruments() // re-renderiza se novos instrumentos forem registrados
+function groupSpecs(specs: ParamSpec[]): [string, ParamSpec[]][] {
+  const groups = new Map<string, ParamSpec[]>()
+  for (const spec of specs) groups.set(spec.group, [...(groups.get(spec.group) ?? []), spec])
+  return [...groups]
+}
+
+/** Edita um timbre do usuário e marca o projeto como alterado (o timbre vai embutido no arquivo). */
+function editParam(track: Track, key: string, value: ParamValue) {
+  setUserTimbreParam(track.instrumentId, key, value)
+  useProjectStore.setState({ dirty: true })
+}
+
+/**
+ * Painel de timbre da faixa selecionada.
+ * Instrumentos de fábrica são fixos (somente leitura): para mudar o som, "Personalizar" cria
+ * um timbre do usuário, que é editável e salvo na biblioteca "Meus timbres".
+ */
+export function InstrumentEditor({ onOpenBuilder }: { onOpenBuilder?: () => void }) {
+  useInstruments() // re-renderiza quando instrumentos/timbres mudam
   const track = useProjectStore((s) => s.project.tracks.find((t) => t.id === s.selectedTrackId))
-  const { setTrackParam, resetTrackParams, checkpoint, updateTrack } = useProjectStore.getState()
+  const { checkpoint, updateTrack } = useProjectStore.getState()
 
   if (!track) {
     return (
@@ -89,16 +113,26 @@ export function InstrumentEditor() {
   }
 
   const def = getInstrument(track.instrumentId)
+  const isUser = isUserTimbre(track.instrumentId)
   const values = effectiveParams(track)
-  const groups = new Map<string, ParamSpec[]>()
-  for (const spec of def.params) groups.set(spec.group, [...(groups.get(spec.group) ?? []), spec])
+  const visibleSpecs = def.editor === 'builder' ? def.params.filter((s) => s.group === 'Macros') : def.params
 
   return (
     <aside className="instrument-editor">
       <h2 style={{ color: track.color }}>{track.name}</h2>
-      <div className="subtitle">
-        {def.name} · {def.category}
-      </div>
+      {isUser ? (
+        <input
+          className="timbre-title"
+          type="text"
+          value={def.name}
+          title="Nome do timbre"
+          onChange={(e) => editUserTimbre(track.instrumentId, { name: e.target.value })}
+        />
+      ) : (
+        <div className="subtitle">
+          {def.name} · {def.category} <span title="Timbre de fábrica (fixo)">🔒</span>
+        </div>
+      )}
 
       <h3>Mixagem</h3>
       <div className="param">
@@ -118,23 +152,127 @@ export function InstrumentEditor() {
         />
       </div>
 
-      {[...groups].map(([group, specs]) => (
-        <section key={group}>
-          <h3>{group}</h3>
-          {specs.map((spec) => (
-            <ParamControl
-              key={spec.key}
-              spec={spec}
-              value={values[spec.key]}
-              onBegin={checkpoint}
-              onChange={(value, history) => setTrackParam(track.id, spec.key, value, history)}
-            />
+      {isUser ? (
+        <>
+          {def.editor === 'builder' && (
+            <button className="active open-builder" onClick={onOpenBuilder}>
+              🎛 Abrir construtor
+            </button>
+          )}
+          {groupSpecs(visibleSpecs).map(([group, specs]) => (
+            <section key={group}>
+              <h3>{group}</h3>
+              {specs.map((spec) => (
+                <ParamControl
+                  key={spec.key}
+                  spec={spec}
+                  value={values[spec.key]}
+                  onChange={(value) => editParam(track, spec.key, value)}
+                />
+              ))}
+            </section>
           ))}
-        </section>
-      ))}
+        </>
+      ) : (
+        <FactoryNotice track={track} onOpenBuilder={onOpenBuilder} />
+      )}
 
-      <h3>&nbsp;</h3>
-      <button onClick={() => resetTrackParams(track.id)}>Restaurar padrão do instrumento</button>
+      <TimbreFooter track={track} />
     </aside>
+  )
+}
+
+/** Instrumento de fábrica: explica que é fixo e oferece criar uma cópia editável. */
+function FactoryNotice({ track, onOpenBuilder }: { track: Track; onOpenBuilder?: () => void }) {
+  const def = getInstrument(track.instrumentId)
+  const hasLegacyTweaks = Object.keys(track.params).length > 0
+
+  const personalize = async () => {
+    const timbre = await createUserTimbre(`${def.name} (meu)`, track.instrumentId, effectiveParams(track))
+    useProjectStore.getState().apply((p) => ({
+      ...p,
+      tracks: p.tracks.map((t) => (t.id === track.id ? { ...t, instrumentId: timbre.id, params: {} } : t)),
+    }))
+    if (def.editor === 'builder') onOpenBuilder?.()
+  }
+
+  return (
+    <div className="factory-notice">
+      <p>Timbre de fábrica — fixo. Para mudar o som, crie a sua versão:</p>
+      <button className="active" onClick={personalize}>
+        ✎ Personalizar este som
+      </button>
+      {hasLegacyTweaks && (
+        <p className="small">
+          Esta faixa tem ajustes de uma versão anterior (continuam tocando).{' '}
+          <button className="link inline" onClick={() => useProjectStore.getState().resetTrackParams(track.id)}>
+            Remover ajustes
+          </button>
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Rodapé discreto: duplicar/excluir timbres do usuário. */
+function TimbreFooter({ track }: { track: Track }) {
+  const [naming, setNaming] = useState(false)
+  const [name, setName] = useState('')
+  if (!isUserTimbre(track.instrumentId)) return null
+
+  const duplicate = async () => {
+    const timbre = await createUserTimbre(name, track.instrumentId, effectiveParams(track))
+    useProjectStore.getState().apply((p) => ({
+      ...p,
+      tracks: p.tracks.map((t) => (t.id === track.id ? { ...t, instrumentId: timbre.id, params: {} } : t)),
+    }))
+    setNaming(false)
+    setName('')
+  }
+
+  const remove = async () => {
+    const timbre = getTimbre(track.instrumentId)
+    if (!timbre || !window.confirm(`Excluir o timbre "${timbre.name}" da sua biblioteca?`)) return
+    // Faixas que usam o timbre voltam ao instrumento base com os mesmos parâmetros (o som não muda).
+    useProjectStore.getState().apply((p) => ({
+      ...p,
+      tracks: p.tracks.map((t) =>
+        t.instrumentId === timbre.id
+          ? { ...t, instrumentId: timbre.baseInstrumentId, params: { ...timbre.params, ...t.params } }
+          : t,
+      ),
+    }))
+    await deleteUserTimbre(timbre.id)
+  }
+
+  return (
+    <div className="timbre-footer">
+      {naming ? (
+        <form
+          className="timbre-name"
+          onSubmit={(e) => {
+            e.preventDefault()
+            duplicate()
+          }}
+        >
+          <input
+            type="text"
+            autoFocus
+            placeholder="Nome da cópia"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && setNaming(false)}
+          />
+          <button type="submit" className="active">Salvar</button>
+          <button type="button" onClick={() => setNaming(false)}>✕</button>
+        </form>
+      ) : (
+        <div className="row">
+          <button onClick={() => setNaming(true)} title="Criar uma cópia deste timbre">Duplicar</button>
+          <button className="danger" onClick={remove}>Excluir timbre</button>
+        </div>
+      )}
+      <p className="small">Alterações neste timbre são salvas automaticamente em "Meus timbres".</p>
+    </div>
   )
 }

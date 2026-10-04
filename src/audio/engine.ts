@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import { projectLengthBeats, type Note, type ParamValues, type Project } from '../model/project'
-import { effectiveParams, getInstrument } from './instruments/registry'
+import { effectiveParams, getInstrument, onInstrumentsChanged } from './instruments/registry'
 import type { InstrumentVoice } from './instruments/types'
 import { isTrackAudible, volumeToDb } from './mixLogic'
 import { scheduleNotes } from './scheduling'
@@ -23,8 +23,21 @@ class AudioEngine {
   private nodes = new Map<string, TrackNodes>()
   private bpm = 120
   private transport = Tone.getTransport()
+  private project: Project | null = null
+
+  constructor() {
+    // Um timbre do usuário atualizado muda os padrões do instrumento sem mudar a faixa;
+    // reaplica os parâmetros efetivos em todas as vozes.
+    onInstrumentsChanged(() => {
+      for (const track of this.project?.tracks ?? []) {
+        const nodes = this.nodes.get(track.id)
+        if (nodes && nodes.instrumentId === track.instrumentId) nodes.voice.setParams(effectiveParams(track))
+      }
+    })
+  }
 
   sync(project: Project) {
+    this.project = project
     this.bpm = project.bpm
     this.transport.bpm.value = project.bpm
     this.transport.loopStart = 0

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { loadBuiltinSamples } from './audio/instruments/registry'
+import { initUserTimbres } from './audio/instruments/userTimbres'
 import App from './App'
 import { engine } from './audio/engine'
 import { renderProjectToWav } from './audio/exportWav'
@@ -13,11 +14,14 @@ if (import.meta.env.DEV) {
 }
 
 // Os samples embutidos são registrados antes da primeira renderização para que
-// o projeto de demonstração encontre seus instrumentos.
-loadBuiltinSamples().finally(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  )
-})
+// o projeto de demonstração encontre seus instrumentos. Os timbres do usuário
+// dependem dos instrumentos base, então vêm depois.
+loadBuiltinSamples()
+  .then(initUserTimbres)
+  .finally(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  })

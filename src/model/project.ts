@@ -33,6 +33,18 @@ export interface Track {
   notes: Note[]
 }
 
+/**
+ * Timbre criado pelo usuário: um instrumento base com parâmetros salvos.
+ * Fica na biblioteca do usuário e é embutido no projeto que o usa.
+ */
+export interface UserTimbre {
+  /** Sempre começa com "user:". */
+  id: string
+  name: string
+  baseInstrumentId: string
+  params: ParamValues
+}
+
 export interface Project {
   version: number
   name: string
@@ -40,6 +52,8 @@ export interface Project {
   beatsPerBar: number
   lengthBars: number
   tracks: Track[]
+  /** Timbres do usuário usados pelas faixas (para o projeto abrir igual em outro computador). */
+  customTimbres?: UserTimbre[]
 }
 
 export const TRACK_COLORS = ['#7c6cff', '#ff6c9d', '#3fd0c9', '#ffb84d', '#7ddc6a', '#5aa9ff', '#e07cff', '#ff7a59']

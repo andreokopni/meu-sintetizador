@@ -87,5 +87,17 @@ removido (`Menu.setApplicationMenu(null)`) e os atalhos de desenvolvedor recriad
 O rAF não roda com a janela oculta e pode atrasar um quadro (salto visível). O ajuste fica
 pendente num ref e é aplicado logo após o React redimensionar o conteúdo.
 
+**Instrumentos de fábrica fixos; edição só em "Meus timbres" (pedido do usuário).**
+O usuário pediu que os instrumentos base não possam ser alterados. Escolheu (entre "ajuste por
+faixa" e "somente leitura") o modelo somente leitura: para mudar o som, "Personalizar" cria um
+timbre do usuário. A edição vai direto ao timbre (não aos `params` da faixa), então todas as faixas
+que o usam mudam juntas — como presets de verdade. Consequência: editar timbre NÃO entra no
+desfazer/refazer do projeto (o timbre vive fora do projeto). `params` por faixa continuam
+suportados só para compatibilidade com projetos antigos (aviso + "Remover ajustes").
+Biblioteca em arquivo (`userData/timbres.json`, escrita atômica via .tmp + rename) e não em
+localStorage, porque são dados do usuário que não podem sumir. Timbres usados vão embutidos no
+projeto; ao abrir num PC sem eles, são registrados só na sessão ("embedded") e entram na
+biblioteca se o usuário editá-los.
+
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.
