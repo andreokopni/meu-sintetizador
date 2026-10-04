@@ -28,12 +28,15 @@ acentos, use Edit/Write (Get-Content/Set-Content no PowerShell 5.1 corrompe UTF-
 - `model/project.ts` — tipos do projeto (JSON puro; tempo em batidas). `serialization.ts` valida e migra por `version`.
 - `audio/instruments/` — `types.ts` (InstrumentDefinition/Voice/ParamSpec), `registry.ts` (registro central,
   ponto de extensão), `synths.ts` (subtrativo, FM, bateria), `samplers.ts` (bibliotecas de samples via manifest).
+- `audio/instruments/userTimbres.ts` — "Meus timbres" (fábrica é FIXA; usuário só edita timbres próprios).
+  `builder.ts` / `builderParams.ts` — Construtor de timbres (motor / parâmetros, modelos, macros).
 - `audio/engine.ts` — motor ao vivo (Tone.js); `sync(project)` aplica diferenças por referência.
 - `audio/scheduling.ts` — cria Tone.Part por faixa (usado no ao vivo e na exportação).
 - `audio/exportWav.ts` + `wav.ts` — renderização offline e codificador WAV 16 bits.
 - `store/useProjectStore.ts` — Zustand, estado imutável, desfazer/refazer (`apply`, `checkpoint`).
 - `actions/` — transporte (tocar/parar) e arquivos (novo/abrir/salvar/exportar).
-- `ui/` — Toolbar, Arrangement (faixas + visão geral), PianoRoll (canvas), InstrumentEditor (gerado por ParamSpec).
+- `ui/` — Toolbar, Arrangement (faixas + visão geral), PianoRoll (canvas; layout em `rollLayout.ts`),
+  InstrumentEditor (gerado por ParamSpec), BuilderModal (construtor em tela cheia), `persist.ts` (prefs de UI).
 - `platform.ts` — usa `window.desktop` (preload do Electron) ou fallback do navegador.
 - `ai/types.ts` — contratos para futura integração com IA (sem implementação).
 - `electron/` — `main.ts` (janela, diálogos, protocolo `app://`), `preload.ts` (API segura).

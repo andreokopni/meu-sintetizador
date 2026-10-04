@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { confirmDiscard, openProject, saveProject } from './actions/fileActions'
 import { togglePlayback } from './actions/transport'
 import { engine } from './audio/engine'
+import { getInstrument } from './audio/instruments/registry'
+import { isUserTimbre } from './audio/instruments/userTimbres'
 import { useProjectStore } from './store/useProjectStore'
 import { Arrangement } from './ui/Arrangement'
+import { BuilderModal } from './ui/BuilderModal'
 import { InstrumentEditor } from './ui/InstrumentEditor'
 import { loadNumber, saveNumber } from './ui/persist'
 import { PianoRoll } from './ui/PianoRoll'
@@ -47,6 +50,14 @@ export default function App() {
   const name = useProjectStore((s) => s.project.name)
   const dirty = useProjectStore((s) => s.dirty)
   const splitter = useSplitter()
+  const [builderOpen, setBuilderOpen] = useState(false)
+  // O construtor só abre para timbres do usuário baseados nele (a fábrica é fixa).
+  const builderTrack = useProjectStore((s) => {
+    const track = s.project.tracks.find((t) => t.id === s.selectedTrackId)
+    return track && isUserTimbre(track.instrumentId) && getInstrument(track.instrumentId).editor === 'builder'
+      ? track
+      : undefined
+  })
 
   // Mantém o motor de áudio sincronizado com o projeto.
   useEffect(() => {
@@ -133,8 +144,9 @@ export default function App() {
       <div className="splitter" onPointerDown={splitter.onPointerDown} title="Arraste para redimensionar" />
       <div className="editor">
         <PianoRoll />
-        <InstrumentEditor />
+        <InstrumentEditor onOpenBuilder={() => setBuilderOpen(true)} />
       </div>
+      {builderOpen && builderTrack && <BuilderModal track={builderTrack} onClose={() => setBuilderOpen(false)} />}
       {busy && (
         <div className="overlay">
           <div className="overlay-box">{busy}</div>

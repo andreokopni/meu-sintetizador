@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { effectiveParams, getInstrument } from '../audio/instruments/registry'
+import { effectiveParams, getInstrument, listInstruments } from '../audio/instruments/registry'
 import type { ParamSpec } from '../audio/instruments/types'
 import {
   createUserTimbre,
@@ -188,7 +188,9 @@ function FactoryNotice({ track, onOpenBuilder }: { track: Track; onOpenBuilder?:
   const hasLegacyTweaks = Object.keys(track.params).length > 0
 
   const personalize = async () => {
-    const timbre = await createUserTimbre(`${def.name} (meu)`, track.instrumentId, effectiveParams(track))
+    const count = listInstruments().filter((d) => d.category === 'Meus timbres').length
+    const name = def.editor === 'builder' ? `Meu timbre ${count + 1}` : `${def.name} (meu)`
+    const timbre = await createUserTimbre(name, track.instrumentId, effectiveParams(track))
     useProjectStore.getState().apply((p) => ({
       ...p,
       tracks: p.tracks.map((t) => (t.id === track.id ? { ...t, instrumentId: timbre.id, params: {} } : t)),

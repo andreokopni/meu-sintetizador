@@ -1,5 +1,15 @@
 # Histórico de alterações
 
+## 2026-10-04 — Criador de timbres (Meus timbres + Construtor)
+- Instrumentos de fábrica passam a ser fixos (somente leitura); "Personalizar este som" cria
+  um timbre do usuário editável. Biblioteca "Meus timbres" salva em arquivo (Electron) e
+  embutida nos projetos que a usam.
+- Novo instrumento "Construtor (criar timbre)": 2 osciladores com uníssono, sub, ruído, filtro
+  com envelope, LFO, distorção/chorus/delay/reverb, 4 macros, 6 modelos.
+- Construtor em janela própria com curvas de envelope, teclado de pré-escuta (mouse e teclado
+  do computador), Variar, A/B e Desfazer tudo. Painel lateral mostra só os macros.
+- Menu nativo do Electron removido; 19 testes.
+
 ## 2026-10-04 — Zoom vertical e painéis redimensionáveis
 - Piano roll: zoom vertical (Alt+roda ou Ctrl+Shift+roda) ancorado no mouse; botões −/+ para
   zoom horizontal e vertical; linhas maiores por padrão (zoom vertical 1,4x).

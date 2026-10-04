@@ -2,9 +2,9 @@
 
 Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HISTORICO.
 
-## EM ANDAMENTO — Criador de timbres (pedido do usuário em 2026-10-04)
+## CONCLUÍDO (aguardando teste do usuário) — Criador de timbres (pedido em 2026-10-04)
 Objetivo: nível 1 (salvar timbre como "Meu timbre") + nível 2 (sintetizador construtor), sem
-poluir o visual atual. Plano (marque ao concluir; cada passo = um commit):
+poluir o visual atual. Passos:
 - [x] A. `setTrackParams` em lote no store; `customTimbres` opcional no projeto (serialização).
 - [x] B. Nível 1: biblioteca de timbres do usuário (`audio/instruments/userTimbres.ts`), persistida
   em arquivo `userData/timbres.json` via IPC no Electron (localStorage na web); categoria
@@ -18,10 +18,14 @@ poluir o visual atual. Plano (marque ao concluir; cada passo = um commit):
   FrequencyEnvelope → AmplitudeEnvelope; compartilhado: LFO (vibrato/filtro), tremolo,
   distorção, chorus, delay, reverb (Freeverb, síncrono). 4 macros fixos (Brilho, Ataque,
   Espaço, Movimento) que escalam outros parâmetros. Tudo declarado como ParamSpec (IA usa isso).
-- [ ] D. UI: painel lateral mostra só macros + botão "Abrir construtor"; o construtor abre em
-  modal com blocos em grade, curvas de envelope (SVG), teclado de pré-escuta (mouse e teclas
-  A-K), modelos iniciais (Básico, Baixo, Lead, Pad, Pluck, Keys), "Variar", A/B e restaurar.
-- [ ] E. Testes (macros, migração de customTimbres), docs, commit.
+- [x] D. UI (`ui/BuilderModal.tsx`): painel lateral mostra só macros + "Abrir construtor"; o
+  construtor abre em modal com 9 blocos, curvas de envelope (SVG), teclado de pré-escuta (mouse,
+  teclas A-K, Z/X oitava), modelos, Variar, A/B e "Desfazer tudo". Fluxo: escolher
+  "Construtor (criar timbre)" no seletor da faixa → "Personalizar" → cria "Meu timbre N" e abre.
+- [x] E. Testes (macros, variar, customTimbres), docs, commit.
+- [ ] Ideias seguintes: modelos de fábrica mais variados; desenhar forma de onda dos osciladores;
+  macros configuráveis; gerar timbre por texto com IA (preencher BUILDER_PARAMS); excluir/renomear
+  timbres pelo seletor; exportar/importar pacote de timbres (.json) — base para venda de presets.
 Detalhe técnico importante: no Tone, conectar um sinal a um Param ZERA o valor do Param; por isso
 modulações aditivas (vibrato no detune, LFO no corte) usam um Tone.Signal de base + o modulador,
 ambos conectados ao Param (as conexões de áudio somam).
