@@ -1,0 +1,52 @@
+{
+  "name": "meu-sintetizador",
+  "productName": "Meu Sintetizador",
+  "version": "0.1.0",
+  "description": "Sintetizador multifaixa com piano roll",
+  "author": "André",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "dev:web": "vite --mode web",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.andre.meusintetizador",
+    "productName": "Meu Sintetizador",
+    "files": [
+      "dist/**",
+      "dist-electron/**"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tone": "^15.1.22",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vite-plugin-electron": "^1.1.2",
+    "vitest": "^5.0.3"
+  }
+}

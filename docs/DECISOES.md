@@ -1,0 +1,50 @@
+# Decisões de arquitetura
+
+Registro das decisões e do motivo de cada uma. Mais recentes no fim.
+
+## 2026-10-04 — Base do projeto
+
+**Electron + React + TypeScript + Vite, áudio com Tone.js.**
+O usuário quer recursos de IA no futuro e talvez monetizar; pediu algo que não fosse só web.
+Electron dá app desktop instalável e o mesmo frontend pode virar versão web/SaaS. Para IA, o
+Electron pode iniciar um backend Python (FastAPI) como processo "sidecar" (onde está o ecossistema
+de modelos de voz/música) ou chamar APIs na nuvem. Alternativas descartadas: Python/Qt (síntese em
+tempo real e piano roll mais trabalhosos), Tauri (exige Rust; mais difícil para o usuário manter).
+
+**Projeto como JSON puro, tempo em batidas (beats), com `version` e migrações.**
+Fácil de salvar, de versionar e de uma IA gerar/editar. BPM pode mudar sem reescrever notas.
+Arquivo: `.msynth` (JSON dentro; campo `format: "meu-sintetizador"`). Usei `.msynth` em vez de
+`.msynth.json` porque filtros de diálogo do Electron não lidam bem com extensão de dois pontos.
+
+**Registro de instrumentos com `InstrumentDefinition` + `ParamSpec`.**
+Todo instrumento declara seus parâmetros; o editor de timbre é gerado a partir deles. Novos tipos
+(samples do usuário, vozes de IA, plugins) entram via `registerInstrument` / `registerSampleLibrary`
+sem mexer na interface. Parâmetros da faixa guardam só o que difere (`params: {}` = padrões);
+`effectiveParams()` completa com os padrões do instrumento.
+
+**Samples empacotados em `public/samples` com `manifest.json`** (gerados por `scripts/fetch-samples.mjs`).
+Piano Salamander + tonejs-instruments, ambos CC-BY 3.0 (uso comercial com atribuição — ver
+`public/samples/CREDITS.md`). ~14 MB, versionados no git. Um sample a cada ~3 semitons; o
+Tone.Sampler interpola o resto. Samples do usuário no futuro usarão o mesmo formato `SampleLibrary`.
+
+**Protocolo `app://` no Electron em produção.**
+`fetch()` de `file://` não funciona no Chromium e o Tone carrega samples via fetch. O handler
+valida o caminho (bloqueia `..`) e adiciona Content-Security-Policy nas páginas HTML.
+
+**Estado em Zustand, imutável; motor de áudio sincroniza por referência.**
+`engine.sync(project)` é chamado a cada mudança e só reconstrói o que mudou (instrumento,
+parâmetros, notas). Desfazer/refazer guarda snapshots do projeto (barato por compartilhamento
+estrutural). Gestos de arrastar chamam `checkpoint()` uma vez e depois `apply(..., false)`.
+
+**Piano roll em Canvas 2D com rolagem virtual.**
+Um div transparente rolável por cima do canvas fornece as barras de rolagem; o canvas desenha só
+a área visível. Evita canvas gigantes e mantém desempenho com muitas notas.
+
+**Exportação WAV: OfflineContext do Tone com `render(false)`.**
+`Tone.Offline` pausa com `setTimeout` a cada segundo de áudio; com a janela em segundo plano o
+navegador atrasa esses timers e a exportação ficava muito lenta. Também desliguei
+`backgroundThrottling` na janela do Electron (app de áudio não deve ser estrangulado).
+
+**Plataforma abstraída em `src/platform.ts`.**
+Usa `window.desktop` (preload) quando existe; senão faz download/seletor de arquivo do navegador.
+Permite rodar a interface no navegador (`npm run dev:web`) para testes e para uma futura versão web.
