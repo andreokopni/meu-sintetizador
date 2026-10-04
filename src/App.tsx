@@ -7,6 +7,7 @@ import { isUserTimbre } from './audio/instruments/userTimbres'
 import { useProjectStore } from './store/useProjectStore'
 import { Arrangement } from './ui/Arrangement'
 import { BuilderModal } from './ui/BuilderModal'
+import { ScoreModal } from './ui/ScoreModal'
 import { InstrumentEditor } from './ui/InstrumentEditor'
 import { loadNumber, saveNumber } from './ui/persist'
 import { PianoRoll } from './ui/PianoRoll'
@@ -51,6 +52,7 @@ export default function App() {
   const dirty = useProjectStore((s) => s.dirty)
   const splitter = useSplitter()
   const [builderOpen, setBuilderOpen] = useState(false)
+  const [scoreOpen, setScoreOpen] = useState(false)
   // O construtor só abre para timbres do usuário baseados nele (a fábrica é fixa).
   const builderTrack = useProjectStore((s) => {
     const track = s.project.tracks.find((t) => t.id === s.selectedTrackId)
@@ -137,7 +139,7 @@ export default function App() {
 
   return (
     <div className="app" style={{ gridTemplateRows: `auto ${splitter.height}px 6px 1fr` }}>
-      <Toolbar />
+      <Toolbar onOpenScore={() => setScoreOpen(true)} />
       <div ref={splitter.arrangementRef} className="arrangement-slot">
         <Arrangement />
       </div>
@@ -147,6 +149,7 @@ export default function App() {
         <InstrumentEditor onOpenBuilder={() => setBuilderOpen(true)} />
       </div>
       {builderOpen && builderTrack && <BuilderModal track={builderTrack} onClose={() => setBuilderOpen(false)} />}
+      {scoreOpen && <ScoreModal onClose={() => setScoreOpen(false)} />}
       {busy && (
         <div className="overlay">
           <div className="overlay-box">{busy}</div>

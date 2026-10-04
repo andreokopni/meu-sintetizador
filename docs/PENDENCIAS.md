@@ -2,17 +2,23 @@
 
 Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HISTORICO.
 
-## EM ANDAMENTO — Partitura (pedido em 2026-10-04, escopo "completo")
-Plano (marque ao concluir):
+## CONCLUÍDO (aguardando teste do usuário) — Partitura (pedido em 2026-10-04, escopo "completo")
+Verificado no navegador: Pour Elise e Ode à Alegria desenham corretamente (piano em pauta dupla,
+bateria em pauta de percussão). **Não verificado: geração do PDF no Electron** (depende do
+diálogo nativo de salvar). Se o PDF sair cortado/em branco, revisar `@media print` em styles.css
+e `exportPdf` em `ui/ScoreModal.tsx` (redesenha com 720 px antes de imprimir).
+Plano:
 - [x] A. `src/notation/` puro (sem Tone, testável): `quantize.ts` (grade de 1/16, vozes, acordes,
   divisão em compassos, ligaduras, valores pontuados alinhados ao tempo), `key.ts` (detecção de
   armadura), `musicxml.ts` (MusicXML 4.0 partwise; piano em pauta dupla; bateria em pauta de
   percussão GM), `midi.ts` (SMF tipo 1, PPQ 480, canal 10 para bateria).
-- [ ] B. Janela "Partitura" (`ui/ScoreModal.tsx`) com OpenSheetMusicDisplay (carregado sob
+- [x] B. Janela "Partitura" (`ui/ScoreModal.tsx`) com OpenSheetMusicDisplay (carregado sob
   demanda), escolha das faixas, exportar MusicXML / MIDI / PDF (Electron `printToPDF` via IPC;
   web: window.print). Botão "Partitura" na barra.
-- [ ] C. Testes, docs, commit. Limitações v1: sem quiálteras (arredonda para 1/16); compasso =
-  beatsPerBar/4 (Pour Elise aparece em 3/4 com valores dobrados).
+- [x] C. Testes, docs, commit. Limitações v1: sem quiálteras (arredonda para 1/16); compasso =
+  beatsPerBar/4 (Pour Elise aparece em 3/4 com valores dobrados); anacruse vira compasso com
+  pausa; baixo escrito na altura real (convenção seria uma oitava acima); no máximo 2 vozes por
+  pauta. Ideias: quiálteras, campo "unidade de tempo" no projeto (3/8, 6/8), editar título/autor.
 
 ## CONCLUÍDO (aguardando teste do usuário) — Criador de timbres (pedido em 2026-10-04)
 Objetivo: nível 1 (salvar timbre como "Meu timbre") + nível 2 (sintetizador construtor), sem

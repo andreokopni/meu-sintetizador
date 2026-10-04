@@ -3,7 +3,7 @@ import { EXAMPLES } from '../model/examples'
 import { createNote } from '../model/project'
 import { detectFifths, spell } from './key'
 import { buildMidi } from './midi'
-import { buildMusicXml, type PartKind } from './musicxml'
+import { buildMusicXml, splitHands, type PartKind } from './musicxml'
 import { decompose, DIV, splitVoices, toChords, voiceToMeasures } from './quantize'
 
 describe('quantização e figuras', () => {
@@ -35,6 +35,16 @@ describe('quantização e figuras', () => {
     const voices = splitVoices(toChords([createNote(60, 0, 1.25), createNote(62, 1, 1)]))
     expect(voices).toHaveLength(1)
     expect(voices[0][0].end).toBe(1 * DIV)
+  })
+})
+
+describe('mãos do piano', () => {
+  it('acorde perto do Dó central fica inteiro numa pauta; baixo + acorde aberto se divide', () => {
+    const g = [createNote(59, 0, 2), createNote(62, 0, 2), createNote(67, 0, 2)]
+    expect(splitHands(g).high).toHaveLength(3)
+    const wide = [createNote(43, 2, 2), createNote(64, 2, 2), createNote(67, 2, 2)]
+    const { high, low } = splitHands(wide)
+    expect([high.length, low.length]).toEqual([2, 1])
   })
 })
 

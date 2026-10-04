@@ -37,6 +37,9 @@ acentos, use Edit/Write (Get-Content/Set-Content no PowerShell 5.1 corrompe UTF-
 - `actions/` — transporte (tocar/parar) e arquivos (novo/abrir/salvar/exportar).
 - `ui/` — Toolbar, Arrangement (faixas + visão geral), PianoRoll (canvas; layout em `rollLayout.ts`),
   InstrumentEditor (gerado por ParamSpec), BuilderModal (construtor em tela cheia), `persist.ts` (prefs de UI).
+- `notation/` — partitura: `quantize.ts`, `key.ts`, `musicxml.ts`, `midi.ts` (puros, testados) e
+  `scoreExport.ts` (liga ao registro de instrumentos). Janela em `ui/ScoreModal.tsx` (OSMD sob demanda).
+- `model/examples.ts` — músicas de exemplo (domínio público), geradas por código.
 - `platform.ts` — usa `window.desktop` (preload do Electron) ou fallback do navegador.
 - `ai/types.ts` — contratos para futura integração com IA (sem implementação).
 - `electron/` — `main.ts` (janela, diálogos, protocolo `app://`), `preload.ts` (API segura).

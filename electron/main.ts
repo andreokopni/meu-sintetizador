@@ -118,6 +118,32 @@ ipcMain.handle('wav:save', async (_event, args: { data: ArrayBuffer; suggestedNa
   return result.filePath
 })
 
+// Salvar arquivo genérico (MusicXML, MIDI...) com diálogo nativo.
+ipcMain.handle(
+  'file:save',
+  async (_event, args: { data: string | ArrayBuffer; suggestedName: string; filterName: string; extensions: string[] }) => {
+    const result = await dialog.showSaveDialog(win!, {
+      defaultPath: args.suggestedName,
+      filters: [{ name: args.filterName, extensions: args.extensions }],
+    })
+    if (result.canceled || !result.filePath) return null
+    await fs.writeFile(result.filePath, typeof args.data === 'string' ? args.data : Buffer.from(args.data))
+    return result.filePath
+  },
+)
+
+// PDF da partitura: imprime a página atual (o CSS de impressão mostra só a partitura).
+ipcMain.handle('score:pdf', async (_event, suggestedName: string) => {
+  const result = await dialog.showSaveDialog(win!, {
+    defaultPath: suggestedName,
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  })
+  if (result.canceled || !result.filePath) return null
+  const data = await win!.webContents.printToPDF({ pageSize: 'A4', printBackground: true })
+  await fs.writeFile(result.filePath, data)
+  return result.filePath
+})
+
 // Biblioteca de timbres do usuário: um JSON na pasta de dados do app (sobrevive a atualizações).
 const timbresFile = () => path.join(app.getPath('userData'), 'timbres.json')
 

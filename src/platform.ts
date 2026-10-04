@@ -7,6 +7,8 @@ interface DesktopApi {
   saveWav(data: ArrayBuffer, suggestedName: string): Promise<string | null>
   onCloseRequested(callback: () => void): void
   confirmClose(): Promise<void>
+  saveFile(data: string | ArrayBuffer, suggestedName: string, filterName: string, extensions: string[]): Promise<string | null>
+  saveScorePdf(suggestedName: string): Promise<string | null>
   loadTimbres(): Promise<string>
   saveTimbres(json: string): Promise<void>
 }
@@ -46,6 +48,26 @@ export async function openProjectFile(): Promise<{ filePath: string; json: strin
     }
     input.click()
   })
+}
+
+/** Salva um arquivo qualquer (diálogo nativo no desktop; download no navegador). */
+export async function saveAnyFile(
+  data: string | ArrayBuffer,
+  fileName: string,
+  mime: string,
+  filterName: string,
+  extensions: string[],
+) {
+  if (window.desktop) return window.desktop.saveFile(data, fileName, filterName, extensions)
+  downloadBlob(new Blob([data], { type: mime }), fileName)
+  return fileName
+}
+
+/** PDF da página atual (o CSS @media print decide o que aparece). Web: diálogo de impressão. */
+export async function savePagePdf(fileName: string) {
+  if (window.desktop) return window.desktop.saveScorePdf(fileName)
+  window.print()
+  return null
 }
 
 const TIMBRES_KEY = 'msynth.userTimbres'

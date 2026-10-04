@@ -49,6 +49,34 @@ function median(values: number[]): number {
   return s[Math.floor(s.length / 2)] ?? 60
 }
 
+const SPLIT_PITCH = 60 // Dó central
+
+/**
+ * Divide notas de piano entre clave de sol e de fá. Acordes (mesmo início e fim) ficam
+ * inteiros na pauta da sua altura média, a não ser que abranjam mais de uma oitava
+ * (aí cada nota vai pela própria altura, como baixo + acorde).
+ */
+export function splitHands(notes: Note[]): { high: Note[]; low: Note[] } {
+  const groups = new Map<string, Note[]>()
+  for (const n of notes) {
+    const key = `${Math.round(n.start * DIV)}:${Math.round((n.start + n.duration) * DIV)}`
+    groups.set(key, [...(groups.get(key) ?? []), n])
+  }
+  const high: Note[] = []
+  const low: Note[] = []
+  for (const group of groups.values()) {
+    const pitches = group.map((n) => n.pitch)
+    const span = Math.max(...pitches) - Math.min(...pitches)
+    if (span > 12) {
+      for (const n of group) (n.pitch >= SPLIT_PITCH ? high : low).push(n)
+    } else {
+      const avg = pitches.reduce((a, b) => a + b, 0) / pitches.length
+      ;(avg >= SPLIT_PITCH ? high : low).push(...group)
+    }
+  }
+  return { high, low }
+}
+
 function planStaves(part: ScorePart): StaffPlan[] {
   if (part.kind === 'drums') {
     const known = part.notes.filter((n) => DRUM_MAP[n.pitch])
@@ -57,8 +85,7 @@ function planStaves(part: ScorePart): StaffPlan[] {
   const treble = '<sign>G</sign><line>2</line>'
   const bass = '<sign>F</sign><line>4</line>'
   if (part.kind === 'piano') {
-    const high = part.notes.filter((n) => n.pitch >= 60)
-    const low = part.notes.filter((n) => n.pitch < 60)
+    const { high, low } = splitHands(part.notes)
     if (high.length && low.length) {
       return [
         { clef: treble, voices: splitVoices(toChords(high)), drums: false },

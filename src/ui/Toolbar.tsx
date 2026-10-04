@@ -34,7 +34,7 @@ function PositionDisplay() {
   return <div className="position" ref={ref} title="Compasso.Tempo.Semicolcheia" />
 }
 
-export function Toolbar() {
+export function Toolbar({ onOpenScore }: { onOpenScore?: () => void }) {
   const project = useProjectStore((s) => s.project)
   const isPlaying = useProjectStore((s) => s.isPlaying)
   const loop = useProjectStore((s) => s.loop)
@@ -52,6 +52,7 @@ export function Toolbar() {
         <button onClick={openProject} title="Abrir (Ctrl+O)">Abrir</button>
         <button onClick={() => saveProject()} title="Salvar (Ctrl+S) — Ctrl+Shift+S salva como">Salvar</button>
         <button onClick={exportWav} title="Renderizar a música em um arquivo .wav">Exportar WAV</button>
+        <button onClick={onOpenScore} title="Ver a partitura e exportar PDF, MusicXML ou MIDI">🎼 Partitura</button>
         <select
           className="examples"
           value=""

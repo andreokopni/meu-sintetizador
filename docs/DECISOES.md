@@ -119,5 +119,19 @@ domínio público (compositores mortos há séculos); os arranjos são próprios
 em 3/8 usa a colcheia como batida (beatsPerBar = 3), porque o modelo ainda não tem unidade de
 compasso separada da batida.
 
+**Partitura via MusicXML + OpenSheetMusicDisplay (OSMD).**
+Gerar MusicXML (formato padrão) resolve duas coisas: o OSMD (BSD-3, uso comercial ok) desenha no
+app, e o mesmo arquivo abre/edita no MuseScore, Finale, Sibelius e Dorico. Alternativa descartada:
+VexFlow direto (teria de fazer toda a diagramação). O OSMD (~1,5 MB) é carregado sob demanda
+(import dinâmico) ao abrir a janela. Núcleo puro em `src/notation/` (testado: todo compasso de
+toda voz fecha a duração certa). Regras de notação: grade de semicolcheia; acordes = notas com
+mesmo início/fim; sobreposição pequena (legato/pedal) encurta a nota anterior em vez de criar
+voz; figura pontuada só alinhada; figura no contratempo não atravessa a próxima batida; armadura
+detectada pela escala maior que deixa menos notas de fora; piano em pauta dupla com acordes
+inteiros na pauta da altura média (exceto se abrirem mais de uma oitava). PDF: Electron
+`printToPDF` com CSS `@media print` (a janela fica num portal fora de #root para poder esconder
+o resto); na web, `window.print()`. MIDI: SMF tipo 1, canal 10 para bateria, programa GM por
+instrumento base.
+
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.

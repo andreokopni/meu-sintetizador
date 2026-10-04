@@ -1,5 +1,12 @@
 # Histórico de alterações
 
+## 2026-10-04 — Partitura
+- Botão "🎼 Partitura": janela com a partitura das faixas escolhidas (OpenSheetMusicDisplay),
+  exportação em PDF, MusicXML (MuseScore etc.) e MIDI.
+- Núcleo de notação em `src/notation/` (quantização, vozes, ligaduras, armadura, MusicXML, MIDI).
+- Pour Elise: mão esquerda com durações exatas (partitura limpa).
+- 38 testes.
+
 ## 2026-10-04 — Músicas de exemplo (domínio público)
 - Seletor "Exemplos…" na barra: Ode à Alegria e Pour Elise (Beethoven), Cânone em Ré
   (Pachelbel), Brilha, Brilha Estrelinha (tradicional). Arranjos próprios em `src/model/examples.ts`.
