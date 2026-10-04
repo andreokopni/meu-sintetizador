@@ -1,5 +1,12 @@
 # Histórico de alterações
 
+## 2026-10-04 — Importar partituras; exemplos fora da barra
+- "Abrir" virou menu: projeto do computador, importar partitura (MIDI, MusicXML, .mxl) e exemplos.
+  O seletor "Exemplos…" saiu da barra.
+- Importadores em `src/notation/` (importMidi, importMusicXml, unzip, gm), com escolha automática
+  de instrumento e mapeamento de bateria GM.
+- 45 testes (inclui ida e volta exportar→importar).
+
 ## 2026-10-04 — Partitura
 - Botão "🎼 Partitura": janela com a partitura das faixas escolhidas (OpenSheetMusicDisplay),
   exportação em PDF, MusicXML (MuseScore etc.) e MIDI.

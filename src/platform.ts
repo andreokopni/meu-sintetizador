@@ -7,6 +7,7 @@ interface DesktopApi {
   saveWav(data: ArrayBuffer, suggestedName: string): Promise<string | null>
   onCloseRequested(callback: () => void): void
   confirmClose(): Promise<void>
+  openFile(title: string, filterName: string, extensions: string[]): Promise<{ name: string; data: ArrayBuffer } | null>
   saveFile(data: string | ArrayBuffer, suggestedName: string, filterName: string, extensions: string[]): Promise<string | null>
   saveScorePdf(suggestedName: string): Promise<string | null>
   loadTimbres(): Promise<string>
@@ -45,6 +46,25 @@ export async function openProjectFile(): Promise<{ filePath: string; json: strin
     input.onchange = async () => {
       const file = input.files?.[0]
       resolve(file ? { filePath: file.name, json: await file.text() } : null)
+    }
+    input.click()
+  })
+}
+
+/** Abre um arquivo binário (diálogo nativo no desktop; seletor de arquivo no navegador). */
+export async function openBinaryFile(
+  title: string,
+  filterName: string,
+  extensions: string[],
+): Promise<{ name: string; data: ArrayBuffer } | null> {
+  if (window.desktop) return window.desktop.openFile(title, filterName, extensions)
+  return new Promise((resolve) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = extensions.map((e) => `.${e}`).join(',')
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      resolve(file ? { name: file.name, data: await file.arrayBuffer() } : null)
     }
     input.click()
   })

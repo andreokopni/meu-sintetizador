@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { exportWav, newProject, openExample, openProject, saveProject } from '../actions/fileActions'
+import { useEffect, useRef, useState } from 'react'
+import { exportWav, importScore, newProject, openExample, openProject, saveProject } from '../actions/fileActions'
 import { EXAMPLES } from '../model/examples'
 import { setLoop, setPlayStart, togglePlayback } from '../actions/transport'
 import { engine } from '../audio/engine'
@@ -34,6 +34,54 @@ function PositionDisplay() {
   return <div className="position" ref={ref} title="Compasso.Tempo.Semicolcheia" />
 }
 
+/** Botão "Abrir ▾": projeto do computador, importar partitura e músicas de exemplo. */
+function OpenMenu() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const close = (e: PointerEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !ref.current?.contains(e.target as Node)) setOpen(false)
+    }
+    window.addEventListener('pointerdown', close)
+    window.addEventListener('keydown', close)
+    return () => {
+      window.removeEventListener('pointerdown', close)
+      window.removeEventListener('keydown', close)
+    }
+  }, [open])
+
+  const run = (action: () => void) => () => {
+    setOpen(false)
+    action()
+  }
+
+  return (
+    <div className="menu" ref={ref}>
+      <button className={open ? 'active' : ''} onClick={() => setOpen(!open)} title="Abrir projeto, importar partitura ou exemplos">
+        Abrir ▾
+      </button>
+      {open && (
+        <div className="menu-popup">
+          <button onClick={run(openProject)}>
+            Projeto do computador… <kbd>Ctrl+O</kbd>
+          </button>
+          <button onClick={run(importScore)}>
+            Importar partitura… <small>MIDI, MusicXML</small>
+          </button>
+          <div className="menu-label">Exemplos (domínio público)</div>
+          {EXAMPLES.map((ex) => (
+            <button key={ex.id} onClick={run(() => openExample(ex.id))}>
+              {ex.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Toolbar({ onOpenScore }: { onOpenScore?: () => void }) {
   const project = useProjectStore((s) => s.project)
   const isPlaying = useProjectStore((s) => s.isPlaying)
@@ -49,23 +97,10 @@ export function Toolbar({ onOpenScore }: { onOpenScore?: () => void }) {
       <div className="sep" />
       <div className="group">
         <button onClick={newProject} title="Novo projeto">Novo</button>
-        <button onClick={openProject} title="Abrir (Ctrl+O)">Abrir</button>
+        <OpenMenu />
         <button onClick={() => saveProject()} title="Salvar (Ctrl+S) — Ctrl+Shift+S salva como">Salvar</button>
         <button onClick={exportWav} title="Renderizar a música em um arquivo .wav">Exportar WAV</button>
         <button onClick={onOpenScore} title="Ver a partitura e exportar PDF, MusicXML ou MIDI">🎼 Partitura</button>
-        <select
-          className="examples"
-          value=""
-          title="Músicas de exemplo (domínio público)"
-          onChange={(e) => openExample(e.target.value)}
-        >
-          <option value="">Exemplos…</option>
-          {EXAMPLES.map((ex) => (
-            <option key={ex.id} value={ex.id}>
-              {ex.name}
-            </option>
-          ))}
-        </select>
       </div>
       <div className="sep" />
       <div className="group">

@@ -2,6 +2,27 @@
 
 Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HISTORICO.
 
+## CONCLUÍDO — Importar partituras + exemplos fora da barra (pedido em 2026-10-04)
+Verificado com arquivos reais (repositório de testes do OSMD): Clementi Sonatina, Schumann
+Dichterliebe, Joplin The Entertainer, Bach Air (cello → Pad). Não verificado: diálogo nativo de
+abrir no Electron e um MIDI real de terceiros (só ida e volta com o nosso exportador).
+- [x] A. Exemplos saem da barra: botão "Abrir" vira menu (Projeto do computador… / Importar
+  partitura (MIDI, MusicXML)… / Exemplos). Sem botões novos na barra.
+- [x] B. `notation/importMidi.ts`: SMF 0/1, running status, tempo, compasso, nomes, programa GM
+  → instrumento; canal 10 → bateria com mapeamento de peças GM fora do kit para a mais próxima.
+- [x] C. `notation/importMusicXml.ts` (DOMParser): partwise, divisions, chord, backup/forward,
+  ligaduras, tempo, compasso, midi-program/nome da parte → instrumento; percussão.
+  `notation/unzip.ts` para `.mxl` (ZIP; DecompressionStream deflate-raw). Repetições não são
+  expandidas (limitação v1).
+- [x] D. IPC `file:open` (binário), ação `importScore`, testes (happy-dom para DOMParser), docs.
+- Limitações da importação: repetições/voltas não expandidas; só o 1º andamento e o 1º compasso
+  (mudanças no meio da música são ignoradas); compassos como 3/8 e 6/8 viram batidas inteiras
+  arredondadas; PDF não importa (converter com MuseScore "Importar PDF" ou Audiveris).
+  Faixa de extensão dos samplers duplicada em `notation/gm.ts` (SAMPLER_RANGES) — atualizar se
+  os samples mudarem.
+- Ao matar o `npx vite` com TaskStop, o processo node filho continuou ouvindo a porta 5173;
+  liberar com Get-NetTCPConnection -LocalPort 5173 | Stop-Process.
+
 ## CONCLUÍDO (aguardando teste do usuário) — Partitura (pedido em 2026-10-04, escopo "completo")
 Verificado no navegador: Pour Elise e Ode à Alegria desenham corretamente (piano em pauta dupla,
 bateria em pauta de percussão). **Não verificado: geração do PDF no Electron** (depende do

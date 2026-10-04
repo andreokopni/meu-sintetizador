@@ -3,7 +3,10 @@ import { registerProjectTimbres, timbresUsedBy } from '../audio/instruments/user
 import { EXAMPLES } from '../model/examples'
 import { createEmptyProject } from '../model/project'
 import { parseProject, serializeProject } from '../model/serialization'
-import { openProjectFile, saveProjectFile, saveWavFile } from '../platform'
+import { importMidi } from '../notation/importMidi'
+import { importMusicXml } from '../notation/importMusicXml'
+import { readMxl } from '../notation/unzip'
+import { openBinaryFile, openProjectFile, saveProjectFile, saveWavFile } from '../platform'
 import { useProjectStore } from '../store/useProjectStore'
 import { stopPlayback } from './transport'
 
@@ -30,6 +33,27 @@ export function openExample(id: string) {
   const project = example.create()
   registerProjectTimbres(project)
   store().loadProject(project, null)
+}
+
+const SCORE_EXTENSIONS = ['mid', 'midi', 'musicxml', 'xml', 'mxl']
+
+/** Importa uma partitura (MIDI, MusicXML ou .mxl) como projeto novo. */
+export async function importScore() {
+  if (!confirmDiscard()) return
+  const file = await openBinaryFile('Importar partitura', 'Partituras (MIDI, MusicXML)', SCORE_EXTENSIONS)
+  if (!file) return
+  try {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+    let project
+    if (ext === 'mid' || ext === 'midi') project = importMidi(file.data, file.name)
+    else if (ext === 'mxl') project = importMusicXml(await readMxl(file.data), file.name)
+    else project = importMusicXml(new TextDecoder().decode(file.data), file.name)
+    stopPlayback()
+    store().loadProject(project, null)
+    useProjectStore.setState({ dirty: true }) // ainda não foi salvo como .msynth
+  } catch (err) {
+    window.alert(`Não foi possível importar: ${(err as Error).message}`)
+  }
 }
 
 export async function openProject() {

@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('desktop', {
     ipcRenderer.on('app:close-requested', () => callback())
   },
   confirmClose: () => ipcRenderer.invoke('app:confirm-close'),
+  openFile: (title: string, filterName: string, extensions: string[]) =>
+    ipcRenderer.invoke('file:open', { title, filterName, extensions }),
   saveFile: (data: string | ArrayBuffer, suggestedName: string, filterName: string, extensions: string[]) =>
     ipcRenderer.invoke('file:save', { data, suggestedName, filterName, extensions }),
   saveScorePdf: (suggestedName: string) => ipcRenderer.invoke('score:pdf', suggestedName),

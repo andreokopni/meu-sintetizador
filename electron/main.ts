@@ -118,6 +118,19 @@ ipcMain.handle('wav:save', async (_event, args: { data: ArrayBuffer; suggestedNa
   return result.filePath
 })
 
+// Abrir arquivo binário (partituras MIDI/MusicXML para importar).
+ipcMain.handle('file:open', async (_event, args: { title: string; filterName: string; extensions: string[] }) => {
+  const result = await dialog.showOpenDialog(win!, {
+    title: args.title,
+    filters: [{ name: args.filterName, extensions: args.extensions }],
+    properties: ['openFile'],
+  })
+  if (result.canceled || result.filePaths.length === 0) return null
+  const filePath = result.filePaths[0]
+  const data = await fs.readFile(filePath)
+  return { name: path.basename(filePath), data: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) }
+})
+
 // Salvar arquivo genérico (MusicXML, MIDI...) com diálogo nativo.
 ipcMain.handle(
   'file:save',

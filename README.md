@@ -22,5 +22,11 @@ npm run dist       # gera o instalador em release/
 - **Atalhos**: Espaço toca/para · Ctrl+Z / Ctrl+Y desfaz/refaz · Ctrl+S salva · Ctrl+O abre ·
   Ctrl+A seleciona todas as notas · Delete apaga as selecionadas.
 
+## Importar partituras
+Menu **Abrir ▾ → Importar partitura…** aceita MIDI (`.mid`) e MusicXML (`.musicxml`, `.xml`, `.mxl`).
+Onde baixar (verifique a licença de cada obra): MuseScore.com (acervo OpenScore, CC0), IMSLP,
+Mutopia Project, Kunst der Fuge. PDF não importa direto: converta antes com o MuseScore
+("Importar PDF") ou com o Audiveris.
+
 Créditos dos samples: `public/samples/CREDITS.md` (CC-BY 3.0).
 Documentação técnica: `CLAUDE.md` e `docs/`.

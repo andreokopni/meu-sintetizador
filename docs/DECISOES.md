@@ -133,5 +133,17 @@ inteiros na pauta da altura média (exceto se abrirem mais de uma oitava). PDF: 
 o resto); na web, `window.print()`. MIDI: SMF tipo 1, canal 10 para bateria, programa GM por
 instrumento base.
 
+**Importação de MIDI e MusicXML (incl. .mxl) — sem bibliotecas externas.**
+Parsers próprios em `notation/` (MIDI: leitor binário com running status; MusicXML: DOMParser;
+.mxl: leitor de ZIP mínimo com DecompressionStream). Evita dependências e mantém tudo testável
+(ida e volta com os nossos exportadores + XML escrito à mão + arquivos reais). Instrumento da
+faixa: nome da parte (várias línguas) > programa GM > piano; se o sampler escolhido não cobre a
+extensão das notas, usa Pad. Bateria: canal 10 (MIDI) ou pauta de percussão (MusicXML), peças GM
+fora do kit vão para a mais parecida.
+
+**Menus no lugar de botões (barra limpa).**
+O usuário reclamou da barra poluída. "Abrir" virou um menu (projeto / importar partitura /
+exemplos) em vez de somar botões e seletores. Seguir esse padrão para novas ações de arquivo.
+
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.
