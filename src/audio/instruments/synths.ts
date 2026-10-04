@@ -60,13 +60,22 @@ const SUBTRACTIVE_PARAMS: ParamSpec[] = [
   { key: 'spread', label: 'Espalhamento (encorpada)', group: 'Oscilador', type: 'number', min: 0, max: 80, step: 1, unit: 'cents' },
   OCTAVE_PARAM,
   ...ENVELOPE_PARAMS,
-  ...FILTER_PARAMS,
+  FILTER_PARAMS[0],
+  FILTER_PARAMS[1],
+  { key: 'resonance', label: 'Ressonância', group: 'Filtro', type: 'number', min: 0.1, max: 12, step: 0.1 },
+  { key: 'filterEnvAmount', label: 'Abertura pelo envelope', group: 'Filtro', type: 'number', min: 0, max: 6, step: 0.1, unit: 'oit' },
+  { key: 'filterDecay', label: 'Fechamento do filtro', group: 'Filtro', type: 'number', min: 0.01, max: 4, step: 0.01, unit: 's', log: true },
 ]
 
+/**
+ * Subtrativo com um filtro 24 dB/oitava POR NOTA (Tone.MonoSynth), com envelope
+ * próprio: cada nota começa mais brilhante e fecha. A primeira versão usava um
+ * filtro único 12 dB/oit. com ressonância fixa em 4 kHz, que deixava as notas
+ * agudas do dente de serra com chiado.
+ */
 function createSubtractive(output: Tone.InputNode, params: ParamValues): InstrumentVoice {
-  const filter = new Tone.Filter({ type: 'lowpass', frequency: 4000, Q: 1 }).connect(output)
-  const synth = new Tone.PolySynth({ voice: Tone.Synth, maxPolyphony: 32 }).connect(filter)
-  synth.volume.value = -10
+  const synth = new Tone.PolySynth({ voice: Tone.MonoSynth, maxPolyphony: 24 }).connect(output)
+  synth.volume.value = -6
   let octave = 0
 
   const setParams = (p: ParamValues) => {
@@ -74,8 +83,16 @@ function createSubtractive(output: Tone.InputNode, params: ParamValues): Instrum
     synth.set({
       oscillator: oscillatorOptions(p) as any,
       envelope: { attack: n(p.attack), decay: n(p.decay), sustain: n(p.sustain), release: n(p.release) },
+      filter: { type: String(p.filterType) as BiquadFilterType, Q: n(p.resonance), rolloff: -24 },
+      filterEnvelope: {
+        attack: n(p.attack),
+        decay: n(p.filterDecay),
+        sustain: 0.25,
+        release: n(p.release),
+        baseFrequency: n(p.cutoff),
+        octaves: n(p.filterEnvAmount),
+      },
     })
-    filter.set({ type: String(p.filterType) as BiquadFilterType, frequency: n(p.cutoff), Q: n(p.resonance) })
   }
   setParams(params)
 
@@ -85,10 +102,7 @@ function createSubtractive(output: Tone.InputNode, params: ParamValues): Instrum
       synth.triggerAttackRelease(midiToHz(pitch + octave * 12), duration, time, velocity),
     setParams,
     releaseAll: () => synth.releaseAll(),
-    dispose: () => {
-      synth.dispose()
-      filter.dispose()
-    },
+    dispose: () => synth.dispose(),
   }
 }
 
@@ -144,8 +158,10 @@ function fm(id: string, name: string, focusPitch: number, defaults: ParamValues)
 
 // ---------- Bateria sintetizada ----------
 
+// Notas no padrão General MIDI de percussão (facilita importar/exportar MIDI no futuro).
 export const DRUM_PITCHES = {
   kick: 36,
+  rim: 37,
   snare: 38,
   clap: 39,
   closedHat: 42,
@@ -154,10 +170,13 @@ export const DRUM_PITCHES = {
   midTom: 45,
   highTom: 48,
   crash: 49,
+  ride: 51,
+  cowbell: 56,
 } as const
 
 const DRUM_LABELS: Record<number, string> = {
   36: 'Bumbo',
+  37: 'Aro',
   38: 'Caixa',
   39: 'Palmas',
   41: 'Tom grave',
@@ -166,7 +185,12 @@ const DRUM_LABELS: Record<number, string> = {
   46: 'Chimbal aberto',
   48: 'Tom agudo',
   49: 'Prato',
+  51: 'Condução',
+  56: 'Cowbell',
 }
+
+/** Ordem das linhas no editor de bateria (de cima para baixo). */
+const DRUM_ROWS = [49, 51, 46, 42, 56, 48, 45, 41, 39, 37, 38, 36]
 
 const DRUM_PARAMS: ParamSpec[] = [
   { key: 'kickTune', label: 'Afinação', group: 'Bumbo', type: 'number', min: -12, max: 12, step: 1, unit: 'st' },
@@ -198,6 +222,15 @@ function createDrums(output: Tone.InputNode, params: ParamValues): InstrumentVoi
     envelope: { attack: 0.002, decay: 1.6, sustain: 0 },
   }).connect(crashFilter)
   const tom = new Tone.PolySynth({ voice: Tone.MembraneSynth, options: { octaves: 2.5, volume: -6 } }).connect(bus)
+  const rideFilter = new Tone.Filter({ type: 'highpass', frequency: 6000, Q: 0.7 }).connect(bus)
+  const ride = new Tone.NoiseSynth({ noise: { type: 'white' }, volume: -20, envelope: { attack: 0.001, decay: 0.9, sustain: 0 } }).connect(rideFilter)
+  const rimFilter = new Tone.Filter({ type: 'bandpass', frequency: 1800, Q: 2 }).connect(bus)
+  const rim = new Tone.MembraneSynth({ octaves: 1, volume: 8, envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.02 } }).connect(rimFilter)
+  // Cowbell clássico (TR-808): duas ondas quadradas desafinadas num passa-banda.
+  const cowbellFilter = new Tone.Filter({ type: 'bandpass', frequency: 800, Q: 3 }).connect(bus)
+  const cowbellEnv = { attack: 0.001, decay: 0.25, sustain: 0, release: 0.05 }
+  const cowbellA = new Tone.Synth({ oscillator: { type: 'square' }, envelope: cowbellEnv, volume: -16 }).connect(cowbellFilter)
+  const cowbellB = new Tone.Synth({ oscillator: { type: 'square' }, envelope: cowbellEnv, volume: -16 }).connect(cowbellFilter)
 
   let p = params
   const setParams = (next: ParamValues) => {
@@ -213,7 +246,10 @@ function createDrums(output: Tone.InputNode, params: ParamValues): InstrumentVoi
   }
   setParams(params)
 
-  const all = [kick, snareFilter, snareNoise, snareBody, clapFilter, clap, hatFilter, closedHat, openHat, crashFilter, crash, tom, bus]
+  const all = [
+    kick, snareFilter, snareNoise, snareBody, clapFilter, clap, hatFilter, closedHat, openHat, crashFilter, crash, tom,
+    rideFilter, ride, rimFilter, rim, cowbellFilter, cowbellA, cowbellB, bus,
+  ]
 
   return {
     ready: Promise.resolve(),
@@ -239,6 +275,16 @@ function createDrums(output: Tone.InputNode, params: ParamValues): InstrumentVoi
         case DRUM_PITCHES.crash:
           crash.triggerAttackRelease(0.5, time, velocity)
           break
+        case DRUM_PITCHES.ride:
+          ride.triggerAttackRelease(0.3, time, velocity)
+          break
+        case DRUM_PITCHES.rim:
+          rim.triggerAttackRelease(420, 0.03, time, velocity)
+          break
+        case DRUM_PITCHES.cowbell:
+          cowbellA.triggerAttackRelease(540, 0.1, time, velocity)
+          cowbellB.triggerAttackRelease(800, 0.1, time, velocity)
+          break
         case DRUM_PITCHES.lowTom:
         case DRUM_PITCHES.midTom:
         case DRUM_PITCHES.highTom: {
@@ -258,29 +304,29 @@ function createDrums(output: Tone.InputNode, params: ParamValues): InstrumentVoi
 
 export const SYNTH_INSTRUMENTS: InstrumentDefinition[] = [
   subtractive('lead', 'Lead', 72, {
-    waveform: 'sawtooth', spread: 20, octave: 0,
-    attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.3,
-    filterType: 'lowpass', cutoff: 4000, resonance: 2,
+    waveform: 'fatsawtooth', spread: 12, octave: 0,
+    attack: 0.01, decay: 0.2, sustain: 0.7, release: 0.25,
+    filterType: 'lowpass', cutoff: 1400, resonance: 1.5, filterEnvAmount: 2.5, filterDecay: 0.35,
   }),
   subtractive('synth-bass', 'Baixo sintetizado', 40, {
     waveform: 'square', spread: 20, octave: 0,
-    attack: 0.005, decay: 0.25, sustain: 0.4, release: 0.15,
-    filterType: 'lowpass', cutoff: 700, resonance: 6,
+    attack: 0.005, decay: 0.25, sustain: 0.5, release: 0.12,
+    filterType: 'lowpass', cutoff: 220, resonance: 3, filterEnvAmount: 3, filterDecay: 0.22,
   }),
   subtractive('pad', 'Pad', 60, {
     waveform: 'fatsawtooth', spread: 30, octave: 0,
     attack: 0.8, decay: 1, sustain: 0.8, release: 2,
-    filterType: 'lowpass', cutoff: 2200, resonance: 1,
+    filterType: 'lowpass', cutoff: 700, resonance: 1, filterEnvAmount: 2, filterDecay: 1.8,
   }),
   subtractive('organ', 'Órgão', 60, {
     waveform: 'organ', spread: 20, octave: 0,
     attack: 0.01, decay: 0.1, sustain: 1, release: 0.1,
-    filterType: 'lowpass', cutoff: 8000, resonance: 0.5,
+    filterType: 'lowpass', cutoff: 6000, resonance: 0.5, filterEnvAmount: 0, filterDecay: 0.1,
   }),
   subtractive('pluck', 'Pluck', 67, {
-    waveform: 'triangle', spread: 20, octave: 0,
-    attack: 0.002, decay: 0.3, sustain: 0, release: 0.3,
-    filterType: 'lowpass', cutoff: 3000, resonance: 3,
+    waveform: 'sawtooth', spread: 20, octave: 0,
+    attack: 0.002, decay: 0.35, sustain: 0, release: 0.3,
+    filterType: 'lowpass', cutoff: 500, resonance: 2, filterEnvAmount: 3.5, filterDecay: 0.18,
   }),
   fm('epiano', 'Piano elétrico', 60, {
     harmonicity: 3, modulationIndex: 10, brightnessDecay: 0.4, octave: 0,
@@ -300,6 +346,7 @@ export const SYNTH_INSTRUMENTS: InstrumentDefinition[] = [
     defaults: { kickTune: 0, kickDecay: 0.5, kickPunch: 0.05, snareDecay: 0.2, snareTone: 1500, hatDecay: 0.05, tomTune: 0 },
     focusPitch: 42,
     pitchLabels: DRUM_LABELS,
+    rows: DRUM_ROWS,
     create: createDrums,
   },
 ]

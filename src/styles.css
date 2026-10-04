@@ -298,6 +298,10 @@ input[type='range'] {
   border-radius: 6px;
 }
 
+.piano-roll .hint .warn {
+  color: var(--mute);
+}
+
 .instrument-editor {
   width: 300px;
   flex-shrink: 0;

@@ -44,5 +44,12 @@ export interface InstrumentDefinition {
   focusPitch: number
   /** Para baterias: nomes das peças por nota MIDI (mostrado no piano roll). */
   pitchLabels?: Record<number, string>
+  /**
+   * Lista fixa de notas (de cima para baixo). Quando definida, o piano roll vira um
+   * editor de peças (modo bateria) mostrando só essas linhas.
+   */
+  rows?: number[]
+  /** Extensão em que o instrumento soa natural (ex.: samplers); o piano roll escurece o resto. */
+  range?: [number, number]
   create(output: Tone.InputNode, params: ParamValues): InstrumentVoice
 }

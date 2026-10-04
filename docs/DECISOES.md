@@ -48,3 +48,29 @@ navegador atrasa esses timers e a exportação ficava muito lenta. Também desli
 **Plataforma abstraída em `src/platform.ts`.**
 Usa `window.desktop` (preload) quando existe; senão faz download/seletor de arquivo do navegador.
 Permite rodar a interface no navegador (`npm run dev:web`) para testes e para uma futura versão web.
+
+## 2026-10-04 — Ajustes após o primeiro teste do usuário
+
+**Modo bateria no piano roll (`InstrumentDefinition.rows`).**
+O usuário achou estranho as peças da bateria espalhadas pelo teclado de piano, e notas fora delas
+não faziam nada. Agora, se o instrumento declara `rows`, o piano roll mostra só essas linhas (uma
+por peça, 30 px, com nome), notas novas nascem com o tamanho da grade e mover na vertical troca de
+peça. A lógica de linhas fica em `ui/rollLayout.ts` (pura, testada). Notas fora do kit (ex.: faixa
+melódica trocada para bateria) ficam ocultas, com aviso no rodapé. Peças seguem o General MIDI
+(36 bumbo, 38 caixa, 42 chimbal…) para facilitar MIDI no futuro. Kit ampliado: aro, condução, cowbell.
+
+**Subtrativo com filtro por nota (PolySynth de MonoSynth, 24 dB/oit) e envelope de filtro.**
+O lead tinha "chiado" em algumas notas. Não era volume alto (pico 0,39, sem clipping): era um
+filtro único de 12 dB/oitava, com ressonância 2 fixa em 4 kHz, sobre dente de serra, que realçava
+os harmônicos agudos das notas altas. Novo parâmetro "Abertura pelo envelope" (oitavas) e
+"Fechamento do filtro" (s); sustain do envelope do filtro fixo em 0,25. Ressonância limitada a 12.
+
+**Violão: guitar-nylon em vez de guitar-acoustic.**
+A análise dos samples mostrou que no guitar-acoustic as notas a partir de G3 são outra gravação
+(sustentação cai de ~7 s para ~1,5 s de repente) — o usuário percebeu como "vira piano em
+algumas notas". O nylon decai de forma gradual. O id continua `sample:guitar` (projetos antigos
+seguem abrindo).
+
+**Extensão natural dos samplers (`InstrumentDefinition.range`).**
+Sample mais grave/agudo ± 4 semitons. Fora disso o piano roll escurece a grade (borda laranja),
+porque o reajuste extremo de altura soa artificial.

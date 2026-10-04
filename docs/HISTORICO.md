@@ -1,5 +1,14 @@
 # Histórico de alterações
 
+## 2026-10-04 — Ajustes após o primeiro teste (bateria, lead, violão)
+- Piano roll com modo bateria: uma linha por peça com nome; notas fora do kit ocultas com aviso.
+- Bateria ganhou aro (37), condução (51) e cowbell (56).
+- Sintetizadores subtrativos refeitos: filtro 24 dB/oit por nota com envelope (remove o chiado do
+  lead); novos presets para Lead, Baixo, Pad, Órgão, Pluck; volume do subtrativo -10 → -6 dB.
+- Violão trocado para samples de nylon (consistentes em toda a extensão).
+- Samplers mostram a extensão natural no piano roll (área escura + borda laranja).
+- Testes do layout do piano roll (12 testes no total).
+
 ## 2026-10-04 — Instalador
 - Gerado `release/Meu Sintetizador Setup 0.1.0.exe` (NSIS, ~117 MB, não versionado no git).
   Precisou de saída fora da Área de Trabalho por causa de EPERM (ver PENDENCIAS).

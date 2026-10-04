@@ -15,6 +15,15 @@ Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HIST
   provavelmente inofensiva.
 
 ## Bugs / limitações conhecidas
+- Log `ERROR:ui\gl\direct_composition_support.cc ... AMD VideoProcessorGetOutputExtension failed`
+  no terminal do Electron (relatado pelo usuário, GPU AMD). É do Chromium tentando um recurso de
+  vídeo do driver AMD; inofensivo para o app (não usamos vídeo). Se incomodar, testar
+  `app.commandLine.appendSwitch('disable-features', 'DirectCompositionVideoOverlays')` — não testado.
+- Projetos salvos em que o usuário editou o timbre do Lead/Baixo/Pad/Órgão/Pluck guardam os
+  parâmetros antigos (corte/ressonância pensados para o filtro antigo) e podem soar diferentes.
+- O envelope do filtro usa sustain fixo (0,25) e não acompanha a altura da nota (sem keytracking).
+- Notas de uma faixa melódica trocada para bateria ficam ocultas (aviso no rodapé do piano roll).
+- Ouvir de novo: lead, pluck e violão (nylon) após as mudanças — verificados só por análise.
 - Durante a exportação WAV, o contexto global do Tone fica trocado pelo offline enquanto os samples
   carregam (`await ready`). A interface fica bloqueada pelo overlay "Renderizando…", então nada
   deveria tocar nesse intervalo — mas qualquer código que crie nós Tone ali iria para o contexto errado.

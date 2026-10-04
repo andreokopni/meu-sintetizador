@@ -9,7 +9,9 @@ const TONEJS_INSTRUMENTS = 'https://nbrosowsky.github.io/tonejs-instruments/samp
 
 const INSTRUMENTS = [
   { id: 'piano', name: 'Piano acústico', base: 'https://tonejs.github.io/audio/salamander', octaves: [1, 7], release: 1.2 },
-  { id: 'guitar', name: 'Violão', base: `${TONEJS_INSTRUMENTS}/guitar-acoustic`, octaves: [2, 5], release: 1 },
+  // guitar-nylon em vez de guitar-acoustic: no acoustic as notas a partir de G3 vêm de outra
+  // gravação (sustentação cai de ~7 s para ~1,5 s de repente) e o timbre "muda de instrumento".
+  { id: 'guitar', name: 'Violão (nylon)', base: `${TONEJS_INSTRUMENTS}/guitar-nylon`, octaves: [1, 5], release: 1 },
   { id: 'violin', name: 'Violino', base: `${TONEJS_INSTRUMENTS}/violin`, octaves: [3, 7], release: 0.6 },
   { id: 'flute', name: 'Flauta', base: `${TONEJS_INSTRUMENTS}/flute`, octaves: [4, 7], release: 0.4 },
   { id: 'bass-electric', name: 'Baixo elétrico', base: `${TONEJS_INSTRUMENTS}/bass-electric`, octaves: [1, 5], release: 0.5 },

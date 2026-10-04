@@ -84,8 +84,18 @@ function createSamplerVoice(lib: SampleLibrary, output: Tone.InputNode, params: 
   }
 }
 
+/** Semitons além do sample mais grave/agudo em que o reajuste de altura ainda soa natural. */
+const RANGE_MARGIN = 4
+
+function naturalRange(lib: SampleLibrary): [number, number] | undefined {
+  const pitches = Object.keys(lib.files).map((note) => Tone.Frequency(note).toMidi())
+  if (!pitches.length) return undefined
+  return [Math.min(...pitches) - RANGE_MARGIN, Math.max(...pitches) + RANGE_MARGIN]
+}
+
 export function samplerDefinition(lib: SampleLibrary): InstrumentDefinition {
   return {
+    range: naturalRange(lib),
     id: `sample:${lib.id}`,
     name: lib.name,
     category: 'Sampler',
