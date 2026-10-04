@@ -1,5 +1,10 @@
 # Histórico de alterações
 
+## 2026-10-04 — Instalador
+- Gerado `release/Meu Sintetizador Setup 0.1.0.exe` (NSIS, ~117 MB, não versionado no git).
+  Precisou de saída fora da Área de Trabalho por causa de EPERM (ver PENDENCIAS).
+- App empacotado testado: abre, carrega interface e samples pelo protocolo `app://`.
+
 ## 2026-10-04 — Versão inicial (v0.1.0)
 - Projeto criado: Electron + React + TypeScript + Vite + Tone.js + Zustand.
 - Modelo de projeto JSON versionado com validação/migração (`.msynth`).

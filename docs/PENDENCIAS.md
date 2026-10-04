@@ -8,7 +8,11 @@ Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HIST
   offline de cada faixa produz áudio (RMS > 0), sem clipping, mute/solo corretos; edição de notas
   (criar, esticar, mover, desfazer, apagar) via eventos sintéticos. Falta o usuário ouvir e testar
   tocar/parar, loop e pré-escuta de notas.
-- [ ] Testar o instalador gerado por `npm run dist` numa instalação limpa.
+- [ ] Testar o instalador gerado por `npm run dist` numa instalação limpa. O app empacotado
+  (`win-unpacked`) já foi aberto com sucesso: interface e samples carregam sem erros.
+- [ ] Confirmar a mensagem "The AudioContext encountered an error from the audio device" vista no
+  log do app empacotado — apareceu no instante em que o processo foi morto à força no teste;
+  provavelmente inofensiva.
 
 ## Bugs / limitações conhecidas
 - Durante a exportação WAV, o contexto global do Tone fica trocado pelo offline enquanto os samples
@@ -22,6 +26,11 @@ Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HIST
   (`FALLBACK_INSTRUMENT_ID`) sem avisar o usuário.
 - `npm install` do Electron: o npm 11 pode não rodar o script de instalação do binário. Se
   `node_modules/electron/dist/electron.exe` não existir, rode `node node_modules/electron/install.js`.
+- `npm run dist` falha com `EPERM ... rename release\win-unpacked.tmp` quando a saída fica na
+  Área de Trabalho (bloqueio do Windows/antivírus ou do sandbox do Claude Code nessa pasta).
+  Contorno: `npx electron-builder --win --config.directories.output=<pasta fora do Desktop>` e
+  copiar o `.exe`. Se acontecer com o usuário também, considerar mover o projeto para fora do Desktop
+  (ex.: `C:\dev\meu-sintetizador`) ou desativar o Acesso Controlado a Pastas para o node.exe.
 - Bundle JS ~515 kB (Tone.js é a maior parte) — irrelevante no desktop; para a versão web, dividir.
 
 ## Próximas funcionalidades (sugestões)
