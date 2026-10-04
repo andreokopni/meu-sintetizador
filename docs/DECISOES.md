@@ -99,5 +99,18 @@ localStorage, porque são dados do usuário que não podem sumir. Timbres usados
 projeto; ao abrir num PC sem eles, são registrados só na sessão ("embedded") e entram na
 biblioteca se o usuário editá-los.
 
+**Construtor de timbres (`builder.ts` + `builderParams.ts`).**
+Pool próprio de vozes (o PolySynth do Tone exige uma classe Monophonic). Por voz: 2 osciladores
+(OmniOscillator, uníssono "fat"), sub (1 oitava abaixo do osc 1), ruído -> filtro 24 dB com
+FrequencyEnvelope -> AmplitudeEnvelope. Compartilhado: LFO de vibrato e de filtro, tremolo,
+distorção, chorus, delay, reverb. Quatro macros FIXOS (Brilho, Suavidade, Espaço, Movimento;
+0,5 = neutro) em `applyMacros` — mais simples que macros configuráveis e suficiente para o painel
+lateral. Parâmetros declarados como ParamSpec (a IA futura gera timbres preenchendo isso).
+Otimizações medidas: (1) Freeverb do Tone usa AudioWorklet e custava ~3 s por 5 s de áudio →
+trocado por Tone.Reverb (convolução nativa), criado só quando reverb > 0; (2) vozes criadas sob
+demanda; (3) efeitos com volume 0 ficam fora da cadeia. Todos os nós recebem `context`
+explícito, porque vozes/reverb nascem durante a renderização offline, quando o contexto global
+do Tone já voltou ao ao vivo. Fontes desligadas (volume 0) nem são iniciadas.
+
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.

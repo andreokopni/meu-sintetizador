@@ -13,7 +13,7 @@ poluir o visual atual. Plano (marque ao concluir; cada passo = um commit):
   mixagem + "Personalizar este som" (cria "<nome> (meu)"). Timbres do usuário são editáveis e a
   edição vai direto para o timbre (salvo com atraso de 600 ms), valendo para todas as faixas que o
   usam. Rodapé: Duplicar / Excluir (ao excluir, faixas voltam ao base com os mesmos parâmetros).
-- [ ] C. Motor do construtor (`audio/instruments/builder.ts`): pool de vozes próprio (não
+- [x] C. (feito; ver DECISOES "Construtor") Motor do construtor (`audio/instruments/builder.ts`): pool de vozes próprio (não
   PolySynth), por voz: osc1, osc2 (OmniOscillator com uníssono), sub, ruído → filtro 24 dB com
   FrequencyEnvelope → AmplitudeEnvelope; compartilhado: LFO (vibrato/filtro), tremolo,
   distorção, chorus, delay, reverb (Freeverb, síncrono). 4 macros fixos (Brilho, Ataque,
@@ -39,6 +39,11 @@ ambos conectados ao Param (as conexões de áudio somam).
   provavelmente inofensiva.
 
 ## Bugs / limitações conhecidas
+- **Desempenho do construtor em tempo real não medido.** Na exportação (aba oculta, mais lenta):
+  16 notas em 5 s de áudio custam 1,5 s (Básico) a 6,7 s (Pad: uníssono 5 + chorus + reverb).
+  Se engasgar ao vivo: reduzir MAX_VOICES (12), limitar uníssono (7) ou encurtar o reverb.
+- Ligar/desligar um efeito do construtor durante a reprodução religa a cadeia (pode dar um clique).
+- Vozes do construtor criadas sob demanda nunca são destruídas até o instrumento ser descartado.
 - Log `ERROR:ui\gl\direct_composition_support.cc ... AMD VideoProcessorGetOutputExtension failed`
   no terminal do Electron (relatado pelo usuário, GPU AMD). É do Chromium tentando um recurso de
   vídeo do driver AMD; inofensivo para o app (não usamos vídeo). Se incomodar, testar

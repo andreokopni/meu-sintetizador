@@ -1,4 +1,5 @@
 import type { ParamValues, Track } from '../../model/project'
+import { BUILDER_INSTRUMENT } from './builder'
 import { loadBuiltinLibraries, samplerDefinition, type SampleLibrary } from './samplers'
 import { SYNTH_INSTRUMENTS } from './synths'
 import type { InstrumentDefinition } from './types'
@@ -58,6 +59,7 @@ export function onInstrumentsChanged(listener: () => void): () => void {
 }
 
 SYNTH_INSTRUMENTS.forEach(registerInstrument)
+registerInstrument(BUILDER_INSTRUMENT)
 
 export async function loadBuiltinSamples() {
   try {
