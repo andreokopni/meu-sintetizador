@@ -1,5 +1,11 @@
 # Histórico de alterações
 
+## 2026-10-04 — Músicas de exemplo (domínio público)
+- Seletor "Exemplos…" na barra: Ode à Alegria e Pour Elise (Beethoven), Cânone em Ré
+  (Pachelbel), Brilha, Brilha Estrelinha (tradicional). Arranjos próprios em `src/model/examples.ts`.
+- "Brilha, Brilha" usa um timbre do Construtor embutido no projeto ("Caixinha de música").
+- Testes: cada exemplo é válido, cabe na duração e sobrevive a salvar/abrir (25 testes).
+
 ## 2026-10-04 — Criador de timbres (Meus timbres + Construtor)
 - Instrumentos de fábrica passam a ser fixos (somente leitura); "Personalizar este som" cria
   um timbre do usuário editável. Biblioteca "Meus timbres" salva em arquivo (Electron) e

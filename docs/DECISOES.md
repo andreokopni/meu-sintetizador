@@ -112,5 +112,12 @@ demanda; (3) efeitos com volume 0 ficam fora da cadeia. Todos os nós recebem `c
 explícito, porque vozes/reverb nascem durante a renderização offline, quando o contexto global
 do Tone já voltou ao ao vivo. Fontes desligadas (volume 0) nem são iniciadas.
 
+**Músicas de exemplo geradas por código (`model/examples.ts`), não arquivos `.msynth`.**
+Ficam versionadas e testadas junto com o formato (se o modelo mudar, os testes acusam) e
+mostram recursos do app (bateria, samplers, Construtor via timbre embutido). Só obras em
+domínio público (compositores mortos há séculos); os arranjos são próprios do app. Pour Elise
+em 3/8 usa a colcheia como batida (beatsPerBar = 3), porque o modelo ainda não tem unidade de
+compasso separada da batida.
+
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.

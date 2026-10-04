@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { exportWav, newProject, openProject, saveProject } from '../actions/fileActions'
+import { exportWav, newProject, openExample, openProject, saveProject } from '../actions/fileActions'
+import { EXAMPLES } from '../model/examples'
 import { setLoop, setPlayStart, togglePlayback } from '../actions/transport'
 import { engine } from '../audio/engine'
 import { useProjectStore } from '../store/useProjectStore'
@@ -51,6 +52,19 @@ export function Toolbar() {
         <button onClick={openProject} title="Abrir (Ctrl+O)">Abrir</button>
         <button onClick={() => saveProject()} title="Salvar (Ctrl+S) — Ctrl+Shift+S salva como">Salvar</button>
         <button onClick={exportWav} title="Renderizar a música em um arquivo .wav">Exportar WAV</button>
+        <select
+          className="examples"
+          value=""
+          title="Músicas de exemplo (domínio público)"
+          onChange={(e) => openExample(e.target.value)}
+        >
+          <option value="">Exemplos…</option>
+          {EXAMPLES.map((ex) => (
+            <option key={ex.id} value={ex.id}>
+              {ex.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="sep" />
       <div className="group">

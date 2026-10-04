@@ -1,5 +1,6 @@
 import { renderProjectToWav } from '../audio/exportWav'
 import { registerProjectTimbres, timbresUsedBy } from '../audio/instruments/userTimbres'
+import { EXAMPLES } from '../model/examples'
 import { createEmptyProject } from '../model/project'
 import { parseProject, serializeProject } from '../model/serialization'
 import { openProjectFile, saveProjectFile, saveWavFile } from '../platform'
@@ -19,6 +20,16 @@ export function newProject() {
   store().loadProject(createEmptyProject(), null)
   store().addTrack('sample:piano')
   useProjectStore.setState({ dirty: false, past: [] })
+}
+
+/** Abre uma das músicas de exemplo (como projeto novo, sem arquivo associado). */
+export function openExample(id: string) {
+  const example = EXAMPLES.find((e) => e.id === id)
+  if (!example || !confirmDiscard()) return
+  stopPlayback()
+  const project = example.create()
+  registerProjectTimbres(project)
+  store().loadProject(project, null)
 }
 
 export async function openProject() {
