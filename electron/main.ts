@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, net, protocol } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -30,7 +30,6 @@ function createWindow() {
     minHeight: 600,
     backgroundColor: '#14141b',
     title: 'Meu Sintetizador',
-    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -38,6 +37,16 @@ function createWindow() {
       // App de áudio: não reduzir timers/animação com a janela em segundo plano.
       backgroundThrottling: false,
     },
+  })
+
+  // Sem menu nativo: o app tem a própria barra, e o Alt (usado no zoom vertical)
+  // mostraria o menu escondido. Atalhos de desenvolvedor mantidos manualmente.
+  Menu.setApplicationMenu(null)
+  win.webContents.on('before-input-event', (_event, input) => {
+    if (input.type !== 'keyDown') return
+    const devTools = input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')
+    if (devTools) win?.webContents.toggleDevTools()
+    if (input.key === 'F5') win?.webContents.reload()
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {

@@ -1,12 +1,41 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { confirmDiscard, openProject, saveProject } from './actions/fileActions'
 import { togglePlayback } from './actions/transport'
 import { engine } from './audio/engine'
 import { useProjectStore } from './store/useProjectStore'
 import { Arrangement } from './ui/Arrangement'
 import { InstrumentEditor } from './ui/InstrumentEditor'
+import { loadNumber, saveNumber } from './ui/persist'
 import { PianoRoll } from './ui/PianoRoll'
 import { Toolbar } from './ui/Toolbar'
+
+const MIN_ARRANGEMENT_H = 90
+const MIN_EDITOR_H = 180
+
+/** Altura da área de faixas, ajustável arrastando a divisória acima do piano roll. */
+function useSplitter() {
+  const [height, setHeight] = useState(() => loadNumber('layout.arrangementH', 300))
+  const arrangementRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => saveNumber('layout.arrangementH', height), [height])
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const top = arrangementRef.current?.getBoundingClientRect().top ?? 0
+    const move = (ev: PointerEvent) => {
+      const max = window.innerHeight - top - MIN_EDITOR_H
+      setHeight(Math.round(Math.min(max, Math.max(MIN_ARRANGEMENT_H, ev.clientY - top))))
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+
+  return { height, arrangementRef, onPointerDown }
+}
 
 function isTyping(target: EventTarget | null) {
   const el = target as HTMLElement | null
@@ -17,6 +46,7 @@ export default function App() {
   const busy = useProjectStore((s) => s.busy)
   const name = useProjectStore((s) => s.project.name)
   const dirty = useProjectStore((s) => s.dirty)
+  const splitter = useSplitter()
 
   // Mantém o motor de áudio sincronizado com o projeto.
   useEffect(() => {
@@ -95,9 +125,12 @@ export default function App() {
   }, [])
 
   return (
-    <div className="app">
+    <div className="app" style={{ gridTemplateRows: `auto ${splitter.height}px 6px 1fr` }}>
       <Toolbar />
-      <Arrangement />
+      <div ref={splitter.arrangementRef} className="arrangement-slot">
+        <Arrangement />
+      </div>
+      <div className="splitter" onPointerDown={splitter.onPointerDown} title="Arraste para redimensionar" />
       <div className="editor">
         <PianoRoll />
         <InstrumentEditor />

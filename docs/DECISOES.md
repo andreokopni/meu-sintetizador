@@ -74,3 +74,18 @@ seguem abrindo).
 **Extensão natural dos samplers (`InstrumentDefinition.range`).**
 Sample mais grave/agudo ± 4 semitons. Fora disso o piano roll escurece a grade (borda laranja),
 porque o reajuste extremo de altura soa artificial.
+
+## 2026-10-04 — Zoom e layout
+
+**Zoom vertical com Alt+roda; sem menu nativo no Electron.**
+Ctrl+roda já era o zoom horizontal (padrão de DAWs). Alt+roda faz o vertical (Ctrl+Shift+roda
+também, alternativa). No Electron, soltar o Alt mostra o menu escondido, então o menu nativo foi
+removido (`Menu.setApplicationMenu(null)`) e os atalhos de desenvolvedor recriados via
+`before-input-event`.
+
+**Rolagem de âncora aplicada em `useLayoutEffect`, não em `requestAnimationFrame`.**
+O rAF não roda com a janela oculta e pode atrasar um quadro (salto visível). O ajuste fica
+pendente num ref e é aplicado logo após o React redimensionar o conteúdo.
+
+**Preferências de interface no localStorage (`ui/persist.ts`).**
+São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.

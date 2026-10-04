@@ -5,8 +5,11 @@ import type { InstrumentDefinition } from '../audio/instruments/types'
 
 export const MIN_PITCH = 21 // A0
 export const MAX_PITCH = 108 // C8
+/** Alturas de linha com zoom vertical 1x; o piano roll multiplica pelo zoom. */
 export const MELODIC_ROW_H = 14
-export const DRUM_ROW_H = 30
+export const DRUM_ROW_H = 26
+export const MIN_V_ZOOM = 0.6
+export const MAX_V_ZOOM = 3.5
 
 export interface RollLayout {
   /** Nota MIDI de cada linha, de cima para baixo. */
@@ -24,12 +27,12 @@ const MELODIC_ROWS = Array.from({ length: MAX_PITCH - MIN_PITCH + 1 }, (_, i) =>
 
 type LayoutSource = Pick<InstrumentDefinition, 'rows' | 'pitchLabels' | 'range'>
 
-export function createLayout(def?: LayoutSource): RollLayout {
+export function createLayout(def?: LayoutSource, vZoom = 1): RollLayout {
   if (def?.rows?.length) {
     const index = new Map(def.rows.map((p, i) => [p, i]))
     return {
       rows: def.rows,
-      rowH: DRUM_ROW_H,
+      rowH: Math.round(DRUM_ROW_H * vZoom),
       drum: true,
       labels: def.pitchLabels,
       indexOf: (p) => index.get(p) ?? -1,
@@ -37,7 +40,7 @@ export function createLayout(def?: LayoutSource): RollLayout {
   }
   return {
     rows: MELODIC_ROWS,
-    rowH: MELODIC_ROW_H,
+    rowH: Math.round(MELODIC_ROW_H * vZoom),
     drum: false,
     labels: def?.pitchLabels,
     range: def?.range,

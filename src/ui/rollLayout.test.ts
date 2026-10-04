@@ -22,6 +22,11 @@ describe('layout do piano roll', () => {
     expect(shiftPitch(l, 36, -1)).toBe(38)
   })
 
+  it('zoom vertical multiplica a altura das linhas', () => {
+    expect(createLayout(undefined, 2).rowH).toBe(28)
+    expect(createLayout({ rows: [36] }, 1.5).rowH).toBe(39)
+  })
+
   it('limita o deslocamento para nenhuma nota sair do layout', () => {
     const l = createLayout({ rows: [49, 42, 38, 36] })
     expect(clampRowDelta(l, [42, 38], -5)).toBe(-1)

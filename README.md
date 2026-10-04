@@ -14,7 +14,9 @@ npm run dist       # gera o instalador em release/
 
 ## Como usar
 - **Piano roll**: clique para criar nota (arraste para esticar), arraste para mover, puxe a borda
-  direita para mudar a duração, botão direito apaga, Shift+arrastar seleciona, Ctrl+roda dá zoom.
+  direita para mudar a duração, botão direito apaga, Shift+arrastar seleciona. Zoom: Ctrl+roda
+  (horizontal), Alt+roda (vertical) ou os botões −/+ no canto. A divisória acima do piano roll
+  pode ser arrastada para dar mais espaço a ele.
 - **Faixas**: escolha o instrumento, volume, M (mudo) e S (solo). "+ Faixa" adiciona.
 - **Timbre**: painel à direita (envelope, filtro, oscilador etc.).
 - **Atalhos**: Espaço toca/para · Ctrl+Z / Ctrl+Y desfaz/refaz · Ctrl+S salva · Ctrl+O abre ·

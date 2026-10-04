@@ -1,5 +1,12 @@
 # Histórico de alterações
 
+## 2026-10-04 — Zoom vertical e painéis redimensionáveis
+- Piano roll: zoom vertical (Alt+roda ou Ctrl+Shift+roda) ancorado no mouse; botões −/+ para
+  zoom horizontal e vertical; linhas maiores por padrão (zoom vertical 1,4x).
+- Divisória arrastável entre a área de faixas e o editor.
+- Zoom e tamanho dos painéis lembrados entre sessões (localStorage, `src/ui/persist.ts`).
+- Menu nativo do Electron removido (o Alt o exibia); F12 / Ctrl+Shift+I abrem DevTools, F5 recarrega.
+
 ## 2026-10-04 — Ajustes após o primeiro teste (bateria, lead, violão)
 - Piano roll com modo bateria: uma linha por peça com nome; notas fora do kit ocultas com aviso.
 - Bateria ganhou aro (37), condução (51) e cowbell (56).

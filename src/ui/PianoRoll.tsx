@@ -1,10 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { setPlayStart } from '../actions/transport'
 import { engine } from '../audio/engine'
 import { getInstrument } from '../audio/instruments/registry'
 import { isBlackKey, pitchName, projectLengthBeats, type Note, type Track } from '../model/project'
 import { useProjectStore } from '../store/useProjectStore'
-import { clampRowDelta, createLayout, rowAtY, shiftPitch, type RollLayout } from './rollLayout'
+import { loadNumber, saveNumber } from './persist'
+import {
+  clampRowDelta,
+  createLayout,
+  MAX_V_ZOOM,
+  MIN_V_ZOOM,
+  rowAtY,
+  shiftPitch,
+  type RollLayout,
+} from './rollLayout'
 import { playheadBeat, useCanvasLoop } from './useCanvas'
 
 const KEY_W = 110
@@ -12,6 +21,7 @@ const RULER_H = 22
 const RESIZE_ZONE = 7
 const MIN_ZOOM = 12
 const MAX_ZOOM = 400
+const ZOOM_STEP = 1.2
 
 type Drag =
   | { kind: 'move'; hitId: string; downBeat: number; downRow: number; originals: Note[]; lastRow: number; changed: boolean }
@@ -27,7 +37,12 @@ export function PianoRoll() {
   const trackId = useProjectStore((s) => s.selectedTrackId)
   const lengthBeats = useProjectStore((s) => projectLengthBeats(s.project))
   const instrumentId = useProjectStore((s) => s.project.tracks.find((t) => t.id === s.selectedTrackId)?.instrumentId)
-  const layout = useMemo(() => createLayout(instrumentId ? getInstrument(instrumentId) : undefined), [instrumentId])
+  const [zoom, setZoom] = useState(() => loadNumber('pianoroll.hZoom', 80)) // pixels por batida
+  const [vZoom, setVZoom] = useState(() => loadNumber('pianoroll.vZoom', 1.4)) // multiplica a altura das linhas
+  const layout = useMemo(
+    () => createLayout(instrumentId ? getInstrument(instrumentId) : undefined, vZoom),
+    [instrumentId, vZoom],
+  )
   const hiddenNotes = useProjectStore((s) => {
     const track = s.project.tracks.find((t) => t.id === s.selectedTrackId)
     return track ? track.notes.filter((n) => layout.indexOf(n.pitch) < 0).length : 0
@@ -35,14 +50,16 @@ export function PianoRoll() {
   const layoutRef = useRef<RollLayout>(layout)
   layoutRef.current = layout
 
-  const [zoom, setZoom] = useState(80) // pixels por batida
   const zoomRef = useRef(zoom)
   zoomRef.current = zoom
+  const vZoomRef = useRef(vZoom)
+  vZoomRef.current = vZoom
 
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef<Drag | null>(null)
   const lastDuration = useRef(1)
   const hoverRow = useRef<number | null>(null)
+  const pendingScroll = useRef<{ left?: () => number; top?: () => number }>({})
 
   const currentTrack = (): Track | undefined => {
     const s = useProjectStore.getState()
@@ -232,38 +249,77 @@ export function PianoRoll() {
   useEffect(() => {
     const scroller = scrollerRef.current
     const track = currentTrack()
+    const L = layoutRef.current
     if (!scroller || !track) return
-    if (layout.drum) {
+    if (L.drum) {
       scroller.scrollTop = 0
     } else {
       const pitches = track.notes.map((n) => n.pitch)
       const center = pitches.length
         ? (Math.min(...pitches) + Math.max(...pitches)) / 2
         : getInstrument(track.instrumentId).focusPitch
-      const row = layout.indexOf(Math.round(center))
-      scroller.scrollTop = row * layout.rowH - (scroller.clientHeight - RULER_H) / 2
+      const row = L.indexOf(Math.round(center))
+      scroller.scrollTop = row * L.rowH - (scroller.clientHeight - RULER_H) / 2
     }
     invalidate()
-  }, [trackId, layout])
+  }, [trackId, instrumentId])
 
-  useEffect(invalidate, [zoom])
+  useEffect(() => {
+    saveNumber('pianoroll.hZoom', zoom)
+    saveNumber('pianoroll.vZoom', vZoom)
+    invalidate()
+  }, [zoom, vZoom])
 
-  // Ctrl + roda do mouse = zoom horizontal (precisa de listener não-passivo).
+  /** Zoom horizontal mantendo fixo o tempo sob `anchorX` (px a partir da grade; padrão: centro). */
+  const applyHZoom = (factor: number, anchorX?: number) => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const x = anchorX ?? (scroller.clientWidth - KEY_W) / 2
+    const beatAtAnchor = (x + scroller.scrollLeft) / zoomRef.current
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomRef.current * factor))
+    zoomRef.current = next
+    setZoom(next)
+    pendingScroll.current.left = () => beatAtAnchor * next - x
+  }
+
+  /** Zoom vertical mantendo fixa a linha sob `anchorY` (px a partir da grade; padrão: centro). */
+  const applyVZoom = (factor: number, anchorY?: number) => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const y = anchorY ?? (scroller.clientHeight - RULER_H) / 2
+    const rowPos = (y + scroller.scrollTop) / layoutRef.current.rowH
+    const next = Math.min(MAX_V_ZOOM, Math.max(MIN_V_ZOOM, vZoomRef.current * factor))
+    vZoomRef.current = next
+    setVZoom(next)
+    pendingScroll.current.top = () => rowPos * layoutRef.current.rowH - y
+  }
+
+  // Aplica a rolagem que mantém a âncora do zoom, logo após o conteúdo mudar de tamanho.
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current
+    const { left, top } = pendingScroll.current
+    if (scroller && left) scroller.scrollLeft = left()
+    if (scroller && top) scroller.scrollTop = top()
+    pendingScroll.current = {}
+  }, [zoom, vZoom])
+
+  const zoomApi = useRef({ applyHZoom, applyVZoom })
+  zoomApi.current = { applyHZoom, applyVZoom }
+
+  // Ctrl + roda = zoom horizontal; Alt (ou Ctrl+Shift) + roda = zoom vertical.
+  // Precisa de listener não-passivo para impedir a rolagem/zoom padrão.
   useEffect(() => {
     const scroller = scrollerRef.current
     if (!scroller) return
     const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return
+      const vertical = e.altKey || (e.ctrlKey && e.shiftKey)
+      if (!vertical && !e.ctrlKey) return
       e.preventDefault()
       const rect = scroller.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left - KEY_W
-      const beatAtMouse = (mouseX + scroller.scrollLeft) / zoomRef.current
-      const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomRef.current * (e.deltaY < 0 ? 1.15 : 1 / 1.15)))
-      zoomRef.current = next
-      setZoom(next)
-      requestAnimationFrame(() => {
-        scroller.scrollLeft = beatAtMouse * next - mouseX
-      })
+      const delta = e.deltaY || e.deltaX
+      const factor = delta < 0 ? 1.15 : 1 / 1.15
+      if (vertical) zoomApi.current.applyVZoom(factor, e.clientY - rect.top - RULER_H)
+      else zoomApi.current.applyHZoom(factor, e.clientX - rect.left - KEY_W)
     }
     scroller.addEventListener('wheel', onWheel, { passive: false })
     return () => scroller.removeEventListener('wheel', onWheel)
@@ -493,6 +549,14 @@ export function PianoRoll() {
         <div style={{ width: contentW, height: contentH }} />
       </div>
       {!trackId && <div className="empty">Adicione uma faixa para começar a compor.</div>}
+      <div className="zoom-controls">
+        <span title="Zoom horizontal (Ctrl + roda)">↔</span>
+        <button onClick={() => applyHZoom(1 / ZOOM_STEP)} title="Menos zoom horizontal">−</button>
+        <button onClick={() => applyHZoom(ZOOM_STEP)} title="Mais zoom horizontal">+</button>
+        <span title="Zoom vertical (Alt + roda)">↕</span>
+        <button onClick={() => applyVZoom(1 / ZOOM_STEP)} title="Linhas mais baixas">−</button>
+        <button onClick={() => applyVZoom(ZOOM_STEP)} title="Linhas mais altas">+</button>
+      </div>
       <div className="hint">
         {hiddenNotes > 0 && (
           <span className="warn">
@@ -500,7 +564,7 @@ export function PianoRoll() {
           </span>
         )}
         {layout.range && !layout.drum && 'Área escura: fora da extensão natural do instrumento · '}
-        Clique: criar · Arrastar: mover/esticar · Botão direito: apagar · Shift+arrastar: selecionar · Ctrl+roda: zoom
+        Clique: criar · Arrastar: mover/esticar · Botão direito: apagar · Shift+arrastar: selecionar · Ctrl+roda: zoom ↔ · Alt+roda: zoom ↕
       </div>
     </div>
   )
