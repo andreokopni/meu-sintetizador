@@ -2,6 +2,18 @@
 
 Atualize ao concluir/descobrir algo. Marque `[x]` ao resolver e mova para o HISTORICO.
 
+## EM ANDAMENTO — Partitura (pedido em 2026-10-04, escopo "completo")
+Plano (marque ao concluir):
+- [x] A. `src/notation/` puro (sem Tone, testável): `quantize.ts` (grade de 1/16, vozes, acordes,
+  divisão em compassos, ligaduras, valores pontuados alinhados ao tempo), `key.ts` (detecção de
+  armadura), `musicxml.ts` (MusicXML 4.0 partwise; piano em pauta dupla; bateria em pauta de
+  percussão GM), `midi.ts` (SMF tipo 1, PPQ 480, canal 10 para bateria).
+- [ ] B. Janela "Partitura" (`ui/ScoreModal.tsx`) com OpenSheetMusicDisplay (carregado sob
+  demanda), escolha das faixas, exportar MusicXML / MIDI / PDF (Electron `printToPDF` via IPC;
+  web: window.print). Botão "Partitura" na barra.
+- [ ] C. Testes, docs, commit. Limitações v1: sem quiálteras (arredonda para 1/16); compasso =
+  beatsPerBar/4 (Pour Elise aparece em 3/4 com valores dobrados).
+
 ## CONCLUÍDO (aguardando teste do usuário) — Criador de timbres (pedido em 2026-10-04)
 Objetivo: nível 1 (salvar timbre como "Meu timbre") + nível 2 (sintetizador construtor), sem
 poluir o visual atual. Passos:

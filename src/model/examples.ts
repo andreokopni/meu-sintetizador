@@ -154,12 +154,13 @@ function furElise(): Project {
     ...section, ['A4', 6 * s], // final
   ], 0, 0.7, 1)
 
-  // Mão esquerda: arpejos nos compassos 2-4 e 6-8 de cada seção (ressoam como com pedal)
+  // Mão esquerda: arpejos nos compassos 2-4 e 6-8 de cada seção
   const am: Step[] = [['A2', s], ['E3', s], ['A3', s], [null, 3 * s]]
   const e: Step[] = [['E2', s], ['E3', s], ['G#3', s], [null, 3 * s]]
   const rest: Step[] = [[null, 6 * s]]
   const leftSection: Step[] = [...rest, ...am, ...e, ...am, ...rest, ...am, ...e, ...am]
-  melody(left, [...rest, ...leftSection, ...leftSection], 0, 0.55, 2.5)
+  // Durações exatas (semicolcheias): soa bem com a liberação do piano e fica limpo na partitura.
+  melody(left, [...rest, ...leftSection, ...leftSection], 0, 0.55, 1)
 
   p.tracks = [right, left]
   return p
