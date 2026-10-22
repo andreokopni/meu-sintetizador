@@ -154,6 +154,6 @@ São conveniências por usuário (zoom, altura do painel); não vão para o arqu
 O usuário pediu para publicar como projeto gratuito. MIT, como no outro projeto público dele
 (traco-firme): permissiva e simples. Os samples não podem ser relicenciados — a CC-BY 3.0 permite
 redistribuir com atribuição, então ficam no repositório com `public/samples/CREDITS.md`, e o
-`LICENSE` avisa a exceção. `"private": true` continua no package.json só para impedir
+README avisa a exceção (o `LICENSE` fica com o texto MIT puro para o GitHub reconhecer a licença). `"private": true` continua no package.json só para impedir
 publicação acidental no npm. Monetização futura segue possível (ex.: recursos pagos de IA ou
 presets), mas o código já publicado continua MIT.
