@@ -4,6 +4,9 @@
 - Repositório público: https://github.com/andreokopni/meu-sintetizador (licença MIT).
 - `LICENSE` novo; README revisado (recursos, requisitos, estado do projeto, licença).
 - package.json com `license` e `repository`; CLAUDE.md e pendências atualizados.
+- Release v0.1.0 no GitHub com o instalador Windows (`Meu-Sintetizador-Setup-0.1.0.exe`, ~125 MB,
+  sem assinatura de código, ícone padrão do Electron). Gerado fora do Desktop por causa do EPERM;
+  o app empacotado abriu normalmente antes da publicação.
 
 ## 2026-10-04 — Importar partituras; exemplos fora da barra
 - "Abrir" virou menu: projeto do computador, importar partitura (MIDI, MusicXML, .mxl) e exemplos.

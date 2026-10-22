@@ -125,4 +125,7 @@ ambos conectados ao Param (as conexões de áudio somam).
 - Faixas de áudio (necessárias para voz gerada por IA).
 - IA: implementar `src/ai/types.ts` (gerar música por prompt, voz cantada). Provável backend
   Python (FastAPI) iniciado pelo Electron, ou APIs na nuvem.
+- Novos releases: subir `version` no package.json, gerar com `npx electron-builder --win
+  --config.directories.output=<pasta fora do Desktop>` e `gh release create vX.Y.Z <exe>`.
+  Ideia: GitHub Actions para gerar o instalador automaticamente a cada tag.
 - Monetização: ícone, assinatura de código (evita alerta do SmartScreen), auto-update, licenças.

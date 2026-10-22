@@ -16,7 +16,13 @@ Feito com Electron, React, TypeScript e Tone.js. Interface em português.
 - **Exportar WAV** (16 bits) e salvar/abrir projetos `.msynth`.
 - **Músicas de exemplo** em domínio público (Beethoven, Pachelbel e outras).
 
-## Rodando
+## Baixar (Windows)
+Baixe o instalador `Meu-Sintetizador-Setup-x.y.z.exe` na página de
+[Releases](https://github.com/andreokopni/meu-sintetizador/releases/latest). O instalador não é
+assinado digitalmente, então o Windows SmartScreen pode avisar: clique em **Mais informações →
+Executar assim mesmo**.
+
+## Rodando a partir do código
 Requer [Node.js](https://nodejs.org) 22 ou mais recente.
 ```
 npm install
