@@ -10,7 +10,9 @@ Visão futura: recursos com IA (voz cantada, música por prompt), samples do usu
 - `docs/HISTORICO.md` — o que mudou em cada etapa/commit
 
 Idioma: português (código em inglês, comentários/UI/docs em português).
-Versionamento: git local, um commit por etapa verificada, sem remoto.
+Versionamento: git, um commit por etapa verificada. Repositório público (grátis, MIT) em
+https://github.com/andreokopni/meu-sintetizador — só faça push quando o usuário pedir.
+Samples em `public/samples` são CC-BY 3.0 (não MIT): manter `CREDITS.md` ao trocá-los.
 
 ## Comandos (PowerShell; Node em `C:\Program Files\nodejs` — se `node` não for achado,
 prefixe `$env:Path = "C:\Program Files\nodejs;" + $env:Path;`)

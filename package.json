@@ -3,7 +3,12 @@
   "productName": "Meu Sintetizador",
   "version": "0.1.0",
   "description": "Sintetizador multifaixa com piano roll",
-  "author": "André",
+  "author": "andreokopni",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreokopni/meu-sintetizador.git"
+  },
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {

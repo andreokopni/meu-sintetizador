@@ -147,3 +147,13 @@ exemplos) em vez de somar botões e seletores. Seguir esse padrão para novas a�
 
 **Preferências de interface no localStorage (`ui/persist.ts`).**
 São conveniências por usuário (zoom, altura do painel); não vão para o arquivo do projeto.
+
+## 2026-10-21 — Publicação no GitHub como projeto grátis
+
+**Repositório público, código sob MIT; samples continuam CC-BY 3.0.**
+O usuário pediu para publicar como projeto gratuito. MIT, como no outro projeto público dele
+(traco-firme): permissiva e simples. Os samples não podem ser relicenciados — a CC-BY 3.0 permite
+redistribuir com atribuição, então ficam no repositório com `public/samples/CREDITS.md`, e o
+`LICENSE` avisa a exceção. `"private": true` continua no package.json só para impedir
+publicação acidental no npm. Monetização futura segue possível (ex.: recursos pagos de IA ou
+presets), mas o código já publicado continua MIT.

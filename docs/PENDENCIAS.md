@@ -121,7 +121,7 @@ ambos conectados ao Param (as conexões de áudio somam).
 - Efeitos por faixa (reverb, delay, compressor) e master.
 - Fórmula de compasso editável na UI (o modelo já tem `beatsPerBar`).
 - Região de loop selecionável na régua.
-- Importar/exportar MIDI; tocar com teclado do computador ou controlador MIDI (Web MIDI).
+- Tocar com teclado do computador ou controlador MIDI (Web MIDI). (Importar/exportar MIDI já existe.)
 - Faixas de áudio (necessárias para voz gerada por IA).
 - IA: implementar `src/ai/types.ts` (gerar música por prompt, voz cantada). Provável backend
   Python (FastAPI) iniciado pelo Electron, ou APIs na nuvem.

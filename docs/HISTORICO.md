@@ -1,5 +1,10 @@
 # Histórico de alterações
 
+## 2026-10-21 — Publicação no GitHub
+- Repositório público: https://github.com/andreokopni/meu-sintetizador (licença MIT).
+- `LICENSE` novo; README revisado (recursos, requisitos, estado do projeto, licença).
+- package.json com `license` e `repository`; CLAUDE.md e pendências atualizados.
+
 ## 2026-10-04 — Importar partituras; exemplos fora da barra
 - "Abrir" virou menu: projeto do computador, importar partitura (MIDI, MusicXML, .mxl) e exemplos.
   O seletor "Exemplos…" saiu da barra.
