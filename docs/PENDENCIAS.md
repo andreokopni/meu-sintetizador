@@ -69,6 +69,14 @@ Detalhe técnico importante: no Tone, conectar um sinal a um Param ZERA o valor 
 modulações aditivas (vibrato no detune, LFO no corte) usam um Tone.Signal de base + o modulador,
 ambos conectados ao Param (as conexões de áudio somam).
 
+## Publicação (GitHub, release v0.1.0 em 2026-10-21)
+- [ ] App sem ícone próprio (usa o padrão do Electron): criar `build/icon.ico` (256 px) e gerar
+  novo release.
+- [ ] Instalador sem assinatura de código: SmartScreen avisa quem baixa (documentado no README).
+- [ ] Instalador do release não testado em máquina limpa (só o app empacotado foi aberto).
+- [ ] Sem CI: releases são gerados à mão nesta máquina (ver "Novos releases" abaixo).
+- [ ] Sem `CONTRIBUTING.md` / modelos de issue — criar se aparecerem contribuidores.
+
 ## Verificação pendente
 - [ ] **Ouvir a reprodução ao vivo no app.** A automação de teste não consegue liberar o áudio
   (política de autoplay do navegador) nem ouvir o resultado. Verificado por script: renderização
